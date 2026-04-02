@@ -54,5 +54,53 @@ public class UserDAO {
             e.printStackTrace();
         }
         return null; // Returns null if login fails
+    } 
+    // Updates username (Task 2.2)
+public boolean updateUsername(int userId, String newUsername) {
+    String sql = "UPDATE Users SET username = ? WHERE user_id = ?";
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        
+        pstmt.setString(1, newUsername);
+        pstmt.setInt(2, userId);
+        int affectedRows = pstmt.executeUpdate();
+        return affectedRows > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
     }
+}
+
+// Updates password (Task 2.2)
+public boolean updatePassword(int userId, String currentPasswordHash, String newPasswordHash) {
+    String checkSql = "SELECT password_hash FROM Users WHERE user_id = ?";
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+        
+        checkStmt.setInt(1, userId);
+        ResultSet rs = checkStmt.executeQuery();
+        if (rs.next()) {
+            String storedHash = rs.getString("password_hash");
+            if (!storedHash.equals(currentPasswordHash)) {
+                return false;
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+
+    String updateSql = "UPDATE Users SET password_hash = ? WHERE user_id = ?";
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+        
+        pstmt.setString(1, newPasswordHash);
+        pstmt.setInt(2, userId);
+        int affectedRows = pstmt.executeUpdate();
+        return affectedRows > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
 }
