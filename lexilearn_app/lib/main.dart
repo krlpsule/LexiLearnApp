@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_info_screen.dart';
+import 'my_studies_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,8 +40,30 @@ class MyHomePage extends StatelessWidget {
           },
         ),
       ),
-      body: const Center(
-        child: Text('Welcome to LexiLearn!'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Welcome to LexiLearn!'),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MyStudiesScreen(userId: 1), 
+                  ),
+                );
+              },
+              icon: const Icon(Icons.school),
+              label: const Text('My Studies'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
