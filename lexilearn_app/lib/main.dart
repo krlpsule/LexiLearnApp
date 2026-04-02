@@ -8,7 +8,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool isLogin = true; // Toggles between Login and Sign Up
   String selectedRole = 'Student'; // Default role for sign up
-  
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
@@ -20,7 +20,9 @@ class _AuthScreenState extends State<AuthScreen> {
       print("Logging in with: ${_emailController.text}");
       // Execute SQL SELECT to verify user and fetch role
     } else {
-      print("Signing up as $selectedRole with username: ${_usernameController.text}");
+      print(
+        "Signing up as $selectedRole with username: ${_usernameController.text}",
+      );
       // Execute SQL INSERT to create user with selectedRole
     }
   }
@@ -28,9 +30,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isLogin ? 'Login' : 'Sign Up'),
-      ),
+      appBar: AppBar(title: Text(isLogin ? 'Login' : 'Sign Up')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -44,7 +44,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 decoration: InputDecoration(labelText: 'Username'),
               ),
             SizedBox(height: 10),
-            
+
             // Email field
             TextField(
               controller: _emailController,
@@ -52,7 +52,7 @@ class _AuthScreenState extends State<AuthScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 10),
-            
+
             // Password field
             TextField(
               controller: _passwordController,
@@ -79,13 +79,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 },
               ),
             SizedBox(height: 20),
-            
+
             // Submit Button
             ElevatedButton(
               onPressed: _submitForm,
               child: Text(isLogin ? 'Login' : 'Sign Up'),
             ),
-            
+
             // Toggle Button
             TextButton(
               onPressed: () {
@@ -93,10 +93,12 @@ class _AuthScreenState extends State<AuthScreen> {
                   isLogin = !isLogin;
                 });
               },
-              child: Text(isLogin 
-                  ? 'Create an account' 
-                  : 'Already have an account? Login'),
-            )
+              child: Text(
+                isLogin
+                    ? 'Create an account'
+                    : 'Already have an account? Login',
+              ),
+            ),
           ],
         ),
       ),
