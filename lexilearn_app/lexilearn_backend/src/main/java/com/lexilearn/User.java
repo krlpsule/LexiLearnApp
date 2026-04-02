@@ -1,3 +1,4 @@
+
 public class User {
     private int userId;
     private String username;
@@ -15,9 +16,23 @@ public class User {
     }
 
     // Getters
-    public int getUserId() { return userId; }
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public String getPasswordHash() { return passwordHash; }
-    public String getRole() { return role; }
+    public int getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public String getRole() {
+        return role;
+    }
 }
