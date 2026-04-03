@@ -6,14 +6,15 @@ import java.sql.SQLException;
 
 public class StudyDAO {
 
-   public boolean insertStudy(int domainId, String title, String level) {
-    String sql = "INSERT INTO Studies (domain_id, title, level) VALUES (?, ?, ?)";
+    public boolean insertStudy(int domainId, String title, String level) {
+        String sql = "INSERT INTO Studies (domain_id, title, level) VALUES (?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, domainId);
-            pstmt.setString(2, level);
+            pstmt.setString(2, title);
+            pstmt.setString(3, level);
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
