@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'services/study_service.dart';
-import 'models/study_models.dart';
+import 'study_service.dart';
+import 'study_models.dart';
 
 class MyStudiesScreen extends StatefulWidget {
   final int userId;
