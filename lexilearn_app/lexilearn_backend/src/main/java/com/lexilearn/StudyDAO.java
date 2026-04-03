@@ -1,4 +1,4 @@
-package main.java.com.lexilearn;
+package com.lexilearn;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class StudyDAO {
 
-    public boolean insertStudy(int domainId, String level) {
-        String sql = "INSERT INTO Studies (domain_id, level) VALUES (?, ?)";
+   public boolean insertStudy(int domainId, String title, String level) {
+    String sql = "INSERT INTO Studies (domain_id, title, level) VALUES (?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
