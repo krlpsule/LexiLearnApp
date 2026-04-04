@@ -102,7 +102,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
                   children: [
-                Radio<int>(
+         Radio<int>(
   value: index,
   groupValue: _correctAnswerIndex,
   onChanged: (value) {
@@ -111,6 +111,12 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     });
   },
   activeColor: Colors.green,
+  fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+    if (_correctAnswerIndex == index) {
+      return Colors.green;
+    }
+    return Colors.red;
+  }),
 ),
                     Expanded(
                       child: TextField(
