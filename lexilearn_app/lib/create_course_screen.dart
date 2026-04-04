@@ -16,14 +16,14 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
   void _saveCourse() {
     if (_courseNameController.text.isEmpty || _selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen kurs adı ve seviye seçiniz')),
+        const SnackBar(content: Text('Please enter a course name and select a level')),
       );
       return;
     }
 
-    // Backend hazır olunca buraya API çağrısı gelecek
+    // API call will be added here when backend is ready
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Kurs oluşturuldu: ${_courseNameController.text} - $_selectedLevel')),
+      SnackBar(content: Text('Course created: ${_courseNameController.text} - $_selectedLevel')),
     );
   }
 
@@ -31,24 +31,24 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yeni Kurs Oluştur'),
+        title: const Text('Create New Course'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Kurs Adı', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Course Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             TextField(
               controller: _courseNameController,
               decoration: const InputDecoration(
-                hintText: 'Kurs adını giriniz',
+                hintText: 'Enter course name',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Seviye', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Level', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ..._levels.map((level) => RadioListTile<String>(
                   title: Text(level),
@@ -65,7 +65,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _saveCourse,
-                child: const Text('Kursu Kaydet'),
+                child: const Text('Save Course'),
               ),
             ),
           ],
