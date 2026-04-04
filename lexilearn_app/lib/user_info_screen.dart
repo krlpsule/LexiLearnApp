@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class UserInfoScreen extends StatefulWidget {
   const UserInfoScreen({super.key});
@@ -9,12 +10,18 @@ class UserInfoScreen extends StatefulWidget {
 
 class _UserInfoScreenState extends State<UserInfoScreen> {
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
-  void _saveChanges() {
+  Future<void> _saveChanges() async {
+    const int userId = 1;
+    const String baseUrl = 'http://10.0.2.2:8080';
+
     String newUsername = _usernameController.text.trim();
+    String currentPassword = _currentPasswordController.text.trim();
     String newPassword = _newPasswordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
 
@@ -25,11 +32,40 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       return;
     }
 
-    if (newPassword.isNotEmpty && newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match!')),
+    // update username
+    if (newUsername.isNotEmpty) {
+      final response = await http.put(
+        Uri.parse(
+          '$baseUrl/user/username?userId=$userId&newUsername=$newUsername',
+        ),
       );
-      return;
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Username could not be updated!')),
+        );
+        return;
+      }
+    }
+
+    // update password
+    if (newPassword.isNotEmpty) {
+      if (newPassword != confirmPassword) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Passwords do not match!')),
+        );
+        return;
+      }
+      final response = await http.put(
+        Uri.parse(
+          '$baseUrl/user/password?userId=$userId&currentHash=$currentPassword&newHash=$newPassword',
+        ),
+      );
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password could not be updated!')),
+        );
+        return;
+      }
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -40,9 +76,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Info'),
-      ),
+      appBar: AppBar(title: const Text('User Info')),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -83,7 +117,9 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _saveChanges,
+              onPressed: () async {
+                await _saveChanges();
+              },
               child: const Text('Save Changes'),
             ),
           ],
