@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'user_info_screen.dart';
 import 'create_course_screen.dart';
+import 'create_question_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,17 +41,33 @@ class MyHomePage extends StatelessWidget {
           },
         ),
       ),
-     body: Center(
-  child: ElevatedButton(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const CreateCourseScreen()),
-      );
-    },
-    child: const Text('Yeni Kurs Oluştur'),
+body: Center(
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateCourseScreen()),
+          );
+        },
+        child: const Text('Yeni Kurs Oluştur'),
+      ),
+      const SizedBox(height: 16),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateQuestionScreen()),
+          );
+        },
+        child: const Text('Soru Oluştur'),
+      ),
+    ],
   ),
-), 
+),
+
     );
   }
 }
