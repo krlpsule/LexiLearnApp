@@ -59,4 +59,34 @@ class MyHomePage extends StatelessWidget {
               },
               icon: const Icon(Icons.school),
               label: const Text('My Studies'),
-              st
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CreateCourseScreen()),
+                );
+              },
+              child: const Text('Create New Course'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CreateQuestionScreen()),
+                );
+              },
+              child: const Text('Create Question'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
