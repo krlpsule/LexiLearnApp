@@ -1,32 +1,32 @@
-# LexiLearn Veritabanı Şeması
+# LexiLearn Database Schema
 
-## Tablolar
+## Tables
 
-### 1. courses (Kurslar)
-| Kolon | Tip | Açıklama |
-|-------|-----|----------|
-| id | INTEGER (PK) | Benzersiz kurs ID |
-| name | TEXT | Kurs adı |
-| level | TEXT | Seviye (Beginner / Intermediate / Advanced) |
-| created_at | DATETIME | Oluşturulma tarihi |
+### 1. courses
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER (PK) | Unique course ID |
+| name | TEXT | Course name |
+| level | TEXT | Level (Beginner / Intermediate / Advanced) |
+| created_at | DATETIME | Creation date |
 
-### 2. questions (Sorular)
-| Kolon | Tip | Açıklama |
-|-------|-----|----------|
-| id | INTEGER (PK) | Benzersiz soru ID |
-| course_id | INTEGER (FK) | Bağlı olduğu kurs (courses.id) |
-| question_text | TEXT | Soru metni |
-| created_at | DATETIME | Oluşturulma tarihi |
+### 2. questions
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER (PK) | Unique question ID |
+| course_id | INTEGER (FK) | Related course (courses.id) |
+| question_text | TEXT | Question text |
+| created_at | DATETIME | Creation date |
 
-### 3. answers (Cevaplar)
-| Kolon | Tip | Açıklama |
-|-------|-----|----------|
-| id | INTEGER (PK) | Benzersiz cevap ID |
-| question_id | INTEGER (FK) | Bağlı olduğu soru (questions.id) |
-| answer_text | TEXT | Cevap metni |
-| is_correct | BOOLEAN | Doğru cevap mı? |
+### 3. answers
+| Column | Type | Description |
+|--------|------|-------------|
+| id | INTEGER (PK) | Unique answer ID |
+| question_id | INTEGER (FK) | Related question (questions.id) |
+| answer_text | TEXT | Answer text |
+| is_correct | BOOLEAN | Is correct answer? |
 
-## İlişkiler
-- Bir kursun birden fazla sorusu olabilir (courses → questions)
-- Bir sorunun birden fazla cevabı olabilir (questions → answers)
-- Her sorunun sadece bir doğru cevabı olabilir
+## Relationships
+- A course can have multiple questions (courses → questions)
+- A question can have multiple answers (questions → answers)
+- Each question can have only one correct answer
