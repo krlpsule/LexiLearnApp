@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_info_screen.dart';
+import 'create_course_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,7 +31,7 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('LexiLearn'),
         leading: IconButton(
-          icon: const Icon(Icons.account_circle),
+          icon: const Icon(Icons.account_circle, size: 40),
           onPressed: () {
             Navigator.push(
               context,
@@ -39,9 +40,17 @@ class MyHomePage extends StatelessWidget {
           },
         ),
       ),
-      body: const Center(
-        child: Text('Welcome to LexiLearn!'),
-      ),
+     body: Center(
+  child: ElevatedButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CreateCourseScreen()),
+      );
+    },
+    child: const Text('Yeni Kurs Oluştur'),
+  ),
+), 
     );
   }
 }
