@@ -69,5 +69,15 @@ public class Main {
             result.put("success", success);
             return gson.toJson(result);
         });
+
+        
+        get("/domains", (req, res) -> {
+            return gson.toJson(domainDAO.getAllDomains());
+        });
+
+        get("/studies", (req, res) -> {
+            return gson.toJson(studyDAO.getAllStudies());
+        });
+        
     }
 }
