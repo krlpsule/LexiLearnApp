@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class UserInfoScreen extends StatefulWidget {
-  const UserInfoScreen({super.key});
+  final int userId;
+
+  const UserInfoScreen({super.key, required this.userId});
 
   @override
   State<UserInfoScreen> createState() => _UserInfoScreenState();
@@ -17,7 +19,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       TextEditingController();
 
   Future<void> _saveChanges() async {
-    const int userId = 1;
+    int currentUserId = widget.userId;
     const String baseUrl = 'http://10.0.2.2:8080';
 
     String newUsername = _usernameController.text.trim();
@@ -36,7 +38,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     if (newUsername.isNotEmpty) {
       final response = await http.put(
         Uri.parse(
-          '$baseUrl/user/username?userId=$userId&newUsername=$newUsername',
+          '$baseUrl/user/username?userId=$currentUserId&newUsername=$newUsername',
         ),
       );
       if (response.statusCode != 200) {
@@ -57,12 +59,16 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       }
       final response = await http.put(
         Uri.parse(
-          '$baseUrl/user/password?userId=$userId&currentHash=$currentPassword&newHash=$newPassword',
+          '$baseUrl/user/password?userId=$currentUserId&currentHash=$currentPassword&newHash=$newPassword',
         ),
       );
       if (response.statusCode != 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password could not be updated!')),
+          const SnackBar(
+            content: Text(
+              'Password could not be updated! Check your current password.',
+            ),
+          ),
         );
         return;
       }
@@ -71,6 +77,11 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Changes saved successfully!')),
     );
+
+    _usernameController.clear();
+    _currentPasswordController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
   }
 
   @override

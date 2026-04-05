@@ -37,7 +37,9 @@ class MyHomePage extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const UserInfoScreen()),
+              MaterialPageRoute(
+                builder: (context) => const UserInfoScreen(userId: 1),
+              ),
             );
           },
         ),
@@ -69,7 +71,9 @@ class MyHomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreateCourseScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CreateCourseScreen(),
+                  ),
                 );
               },
               child: const Text('Create New Course'),
@@ -79,7 +83,9 @@ class MyHomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreateQuestionScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => CreateQuestionScreen(),
+                  ),
                 );
               },
               child: const Text('Create Question'),

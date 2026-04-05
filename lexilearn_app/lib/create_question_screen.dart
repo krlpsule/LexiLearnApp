@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CreateQuestionScreen extends StatefulWidget {
   const CreateQuestionScreen({super.key});
@@ -15,11 +17,47 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   ];
   int? _correctAnswerIndex;
 
+  String? _selectedLevel;
+  String? _selectedStudyId;
+  List<dynamic> _studies = [];
+
+  final List<String> _levels = ['Beginner', 'Intermediate', 'Advanced'];
+  final String baseUrl = 'http://10.0.2.2:8080';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStudies();
+  }
+
+  Future<void> _fetchStudies() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/studies'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _studies = jsonDecode(response.body);
+          if (_selectedStudyId != null &&
+              !_studies.any(
+                (s) => s['studyId'].toString() == _selectedStudyId,
+              )) {
+            _selectedStudyId = null;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error fetching studies: $e');
+    }
+  }
+
   void _addAnswer() {
     if (_answerControllers.length < 6) {
       setState(() {
         _answerControllers.add(TextEditingController());
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You can add up to 6 options.')),
+      );
     }
   }
 
@@ -29,71 +67,163 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         _answerControllers.removeAt(index);
         if (_correctAnswerIndex == index) {
           _correctAnswerIndex = null;
-        } else if (_correctAnswerIndex != null && _correctAnswerIndex! > index) {
+        } else if (_correctAnswerIndex != null &&
+            _correctAnswerIndex! > index) {
           _correctAnswerIndex = _correctAnswerIndex! - 1;
         }
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('There must be at least 2 options.')),
+      );
     }
   }
 
-  void _saveQuestion() {
-    if (_questionController.text.isEmpty) {
+  Future<void> _saveQuestion() async {
+    if (_selectedStudyId == null ||
+        _questionController.text.trim().isEmpty ||
+        _selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen soru giriniz')),
+        const SnackBar(
+          content: Text(
+            'Please select a Study, Question Text, and Difficulty Level.',
+          ),
+        ),
       );
       return;
     }
     if (_correctAnswerIndex == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lütfen doğru cevabı seçiniz')),
+        const SnackBar(content: Text('Please mark the correct answer.')),
       );
       return;
     }
+
+    List<String> options = [];
     for (var controller in _answerControllers) {
-      if (controller.text.isEmpty) {
+      if (controller.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lütfen tüm cevap alanlarını doldurunuz')),
+          const SnackBar(
+            content: Text(
+              'Please fill in all answer fields or remove empty options.',
+            ),
+          ),
         );
         return;
       }
+      options.add(controller.text.trim());
     }
 
-    // Backend hazır olunca buraya API çağrısı gelecek
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Soru kaydedildi! Doğru cevap: ${_answerControllers[_correctAnswerIndex!].text}',
-        ),
-      ),
-    );
+    String correctAnswer = options[_correctAnswerIndex!];
+    String optionsJson = jsonEncode(options);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/question'),
+        body: {
+          'studyId': _selectedStudyId!,
+          'text': _questionController.text.trim(),
+          'answer': correctAnswer,
+          'options': optionsJson,
+          'level': _selectedLevel!,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Question saved successfully!')),
+        );
+
+        _questionController.clear();
+        for (var controller in _answerControllers) {
+          controller.clear();
+        }
+        setState(() {
+          _correctAnswerIndex = null;
+          _selectedLevel = null;
+          _selectedStudyId = null;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save question!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Connection error: $e')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Soru Oluştur'),
-      ),
+      appBar: AppBar(title: const Text('Create Question')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Soru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Which Study to Add To?',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedStudyId,
+              items: _studies.map<DropdownMenuItem<String>>((study) {
+                return DropdownMenuItem<String>(
+                  value: study['studyId'].toString(),
+                  child: Text(study['title']),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedStudyId = value),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              hint: const Text('Select a Study'),
+            ),
+            const SizedBox(height: 24),
+
+            const Text(
+              'Question',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _questionController,
               maxLines: 3,
               decoration: const InputDecoration(
-                hintText: 'Soruyu giriniz',
+                hintText: 'Enter the question',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Cevaplar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
+            const Text(
+              'Difficulty Level',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedLevel,
+              items: _levels
+                  .map(
+                    (level) =>
+                        DropdownMenuItem(value: level, child: Text(level)),
+                  )
+                  .toList(),
+              onChanged: (val) => setState(() => _selectedLevel = val),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              hint: const Text('Select Level'),
+            ),
+            const SizedBox(height: 24),
+
+            const Text(
+              'Answers',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             const Text(
-              'Doğru cevabı seçmek için yanındaki daireye tıklayın',
+              'Click the circle next to the correct answer',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),
@@ -102,33 +232,33 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
                   children: [
-         Radio<int>(
-  value: index,
-  groupValue: _correctAnswerIndex,
-  onChanged: (value) {
-    setState(() {
-      _correctAnswerIndex = value;
-    });
-  },
-  activeColor: Colors.green,
-  fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-    if (_correctAnswerIndex == index) {
-      return Colors.green;
-    }
-    return Colors.red;
-  }),
-),
+                    Radio<int>(
+                      value: index,
+                      groupValue: _correctAnswerIndex,
+                      onChanged: (value) =>
+                          setState(() => _correctAnswerIndex = value),
+                      activeColor: Colors.green,
+                      fillColor: WidgetStateProperty.resolveWith<Color>((
+                        states,
+                      ) {
+                        if (_correctAnswerIndex == index) return Colors.green;
+                        return Colors.red;
+                      }),
+                    ),
                     Expanded(
                       child: TextField(
                         controller: _answerControllers[index],
                         decoration: InputDecoration(
-                          hintText: 'Cevap ${index + 1}',
+                          hintText: 'Answer ${index + 1}',
                           border: const OutlineInputBorder(),
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: Colors.red,
+                      ),
                       onPressed: () => _removeAnswer(index),
                     ),
                   ],
@@ -138,14 +268,14 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             TextButton.icon(
               onPressed: _addAnswer,
               icon: const Icon(Icons.add),
-              label: const Text('Cevap Ekle'),
+              label: const Text('Add Answer'),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _saveQuestion,
-                child: const Text('Soruyu Kaydet'),
+                child: const Text('Save Question'),
               ),
             ),
           ],
