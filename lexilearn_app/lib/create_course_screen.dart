@@ -23,22 +23,27 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
 
     // Backend hazır olunca buraya API çağrısı gelecek
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Kurs oluşturuldu: ${_courseNameController.text} - $_selectedLevel')),
+      SnackBar(
+        content: Text(
+          'Kurs oluşturuldu: ${_courseNameController.text} - $_selectedLevel',
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Yeni Kurs Oluştur'),
-      ),
+      appBar: AppBar(title: const Text('Yeni Kurs Oluştur')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Kurs Adı', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Kurs Adı',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _courseNameController,
@@ -48,18 +53,23 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Seviye', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Seviye',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            ..._levels.map((level) => RadioListTile<String>(
-                  title: Text(level),
-                  value: level,
-                  groupValue: _selectedLevel,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedLevel = value;
-                    });
-                  },
-                )),
+            ..._levels.map(
+              (level) => RadioListTile<String>(
+                title: Text(level),
+                value: level,
+                groupValue: _selectedLevel,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedLevel = value;
+                  });
+                },
+              ),
+            ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
