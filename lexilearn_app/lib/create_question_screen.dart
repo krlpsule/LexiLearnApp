@@ -149,9 +149,9 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Connection error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Connection error: $e')),
+      );
     }
   }
 
@@ -182,7 +182,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select a Study'),
             ),
             const SizedBox(height: 24),
-
             const Text(
               'Question',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -197,7 +196,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
             const Text(
               'Difficulty Level',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -216,7 +214,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select Level'),
             ),
             const SizedBox(height: 24),
-
             const Text(
               'Answers',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
