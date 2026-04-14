@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NavigationDrawer extends StatelessWidget {
+  final int userId;
   final String username;
   final String userRole;
   final int selectedIndex;
@@ -8,6 +9,7 @@ class NavigationDrawer extends StatelessWidget {
   
   const NavigationDrawer({
     super.key,
+    required this.userId,
     required this.username,
     required this.userRole,
     required this.selectedIndex,

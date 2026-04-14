@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide NavigationDrawer;
 import 'navigation_drawer.dart';
 import 'clickable_username.dart';
 import 'dashboard_screen.dart';
@@ -6,6 +6,7 @@ import 'my_studies_screen.dart';
 import 'create_course_screen.dart';
 import 'create_question_screen.dart';
 import 'user_info_screen.dart';
+import 'login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,11 +23,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MainScreen(
-        username: 'John Doe',
-        userRole: 'Student',
-        userId: 1,
-      ),
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -36,7 +33,7 @@ class MainScreen extends StatefulWidget {
   final String username;
   final String userRole;
   final int userId;
-  
+
   const MainScreen({
     super.key,
     required this.username,
@@ -61,14 +58,16 @@ class _MainScreenState extends State<MainScreen> {
         foregroundColor: Colors.white,
         actions: [
           ClickableUsername(
+            userId: widget.userId,
             username: widget.username,
             userRole: widget.userRole,
           ),
         ],
       ),
-      
+
       // Sidebar drawer (Task 3.1)
       drawer: NavigationDrawer(
+        userId: widget.userId,
         username: widget.username,
         userRole: widget.userRole,
         selectedIndex: _selectedIndex,
@@ -78,7 +77,7 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
       ),
-      
+
       // Body changes based on selected menu
       body: _selectedIndex == 0
           ? DashboardScreen(
@@ -86,17 +85,17 @@ class _MainScreenState extends State<MainScreen> {
               userRole: widget.userRole,
             )
           : _selectedIndex == 1
-              ? MyStudiesScreen(userId: widget.userId)
-              : _selectedIndex == 2 && widget.userRole == "Professor"
-                  ? const CreateCourseScreen()
-                  : _selectedIndex == 3 && widget.userRole == "Professor"
-                      ? const CreateQuestionScreen()
-                      : const Center(
-                          child: Text(
-                            'Coming Soon',
-                            style: TextStyle(fontSize: 24, color: Colors.grey),
-                          ),
-                        ),
+          ? MyStudiesScreen(userId: widget.userId)
+          : _selectedIndex == 2 && widget.userRole == "Professor"
+          ? const CreateCourseScreen()
+          : _selectedIndex == 3 && widget.userRole == "Professor"
+          ? const CreateQuestionScreen()
+          : const Center(
+              child: Text(
+                'Coming Soon',
+                style: TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            ),
     );
   }
 }
