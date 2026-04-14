@@ -84,25 +84,17 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         _questionController.text.trim().isEmpty ||
         _selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-        const SnackBar(content: Text('Please enter a question')),
-=======
         const SnackBar(
           content: Text(
             'Please select a Study, Question Text, and Difficulty Level.',
           ),
         ),
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
       );
       return;
     }
     if (_correctAnswerIndex == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-        const SnackBar(content: Text('Please select the correct answer')),
-=======
         const SnackBar(content: Text('Please mark the correct answer.')),
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
       );
       return;
     }
@@ -111,30 +103,17 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     for (var controller in _answerControllers) {
       if (controller.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-          const SnackBar(content: Text('Please fill in all answer fields')),
-=======
           const SnackBar(
             content: Text(
               'Please fill in all answer fields or remove empty options.',
             ),
           ),
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
         );
         return;
       }
       options.add(controller.text.trim());
     }
 
-<<<<<<< HEAD
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Question saved! Correct answer: ${_answerControllers[_correctAnswerIndex!].text}',
-        ),
-      ),
-    );
-=======
     String correctAnswer = options[_correctAnswerIndex!];
     String optionsJson = jsonEncode(options);
 
@@ -170,31 +149,21 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Connection error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Connection error: $e')),
+      );
     }
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
-      appBar: AppBar(
-        title: const Text('Create Question'),
-      ),
-=======
       appBar: AppBar(title: const Text('Create Question')),
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-<<<<<<< HEAD
-            const Text('Question', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-=======
             const Text(
               'Which Study to Add To?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -213,33 +182,20 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select a Study'),
             ),
             const SizedBox(height: 24),
-
             const Text(
               'Question',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
             const SizedBox(height: 8),
             TextField(
               controller: _questionController,
               maxLines: 3,
               decoration: const InputDecoration(
-<<<<<<< HEAD
-                hintText: 'Enter your question',
-=======
                 hintText: 'Enter the question',
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
-<<<<<<< HEAD
-            const Text('Answers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            const Text(
-              'Click the circle to select the correct answer',
-=======
-
             const Text(
               'Difficulty Level',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -258,7 +214,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select Level'),
             ),
             const SizedBox(height: 24),
-
             const Text(
               'Answers',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -266,7 +221,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const SizedBox(height: 4),
             const Text(
               'Click the circle next to the correct answer',
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),
@@ -278,18 +232,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                     Radio<int>(
                       value: index,
                       groupValue: _correctAnswerIndex,
-<<<<<<< HEAD
-                      onChanged: (value) {
-                        setState(() {
-                          _correctAnswerIndex = value;
-                        });
-                      },
-                      activeColor: Colors.green,
-                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-                        if (_correctAnswerIndex == index) {
-                          return Colors.green;
-                        }
-=======
                       onChanged: (value) =>
                           setState(() => _correctAnswerIndex = value),
                       activeColor: Colors.green,
@@ -297,7 +239,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                         states,
                       ) {
                         if (_correctAnswerIndex == index) return Colors.green;
->>>>>>> 4475f0a0a692013d0cac4d3d25056c9c89dee2d9
                         return Colors.red;
                       }),
                     ),
