@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final String username;
+  final String userRole;
+  
+  const DashboardScreen({
+    super.key,
+    required this.username,
+    required this.userRole,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +24,19 @@ class DashboardScreen extends StatelessWidget {
               color: Colors.blue,
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Welcome to LexileLearn!',
-              style: TextStyle(
+            Text(
+              'Welcome back, $username!',
+              style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 10),
+            Text(
+              'Role: $userRole',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 20),
             const Text(
               'Your personalized learning platform',
               style: TextStyle(fontSize: 16, color: Colors.grey),
