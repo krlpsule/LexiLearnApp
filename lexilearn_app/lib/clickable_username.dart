@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'user_info_screen.dart';
 
 class ClickableUsername extends StatelessWidget {
+  final int userId;
   final String username;
   final String userRole;
-  
+
   const ClickableUsername({
     super.key,
+    required this.userId,
     required this.username,
     required this.userRole,
   });
@@ -18,10 +20,7 @@ class ClickableUsername extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => UserInfoScreen(
-              username: username,
-              role: userRole,
-            ),
+            builder: (context) => UserInfoScreen(userId: userId),
           ),
         );
       },
@@ -33,10 +32,7 @@ class ClickableUsername extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               username,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(width: 4),
             const Icon(Icons.arrow_drop_down, size: 20),
