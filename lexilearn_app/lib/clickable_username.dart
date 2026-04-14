@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'user_info_screen.dart';
 
 class ClickableUsername extends StatelessWidget {
   final String username;
@@ -14,9 +15,14 @@ class ClickableUsername extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to User Info Screen
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hello, $username!')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserInfoScreen(
+              username: username,
+              role: userRole,
+            ),
+          ),
         );
       },
       child: Container(
