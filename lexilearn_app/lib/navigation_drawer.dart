@@ -6,7 +6,7 @@ class NavigationDrawer extends StatelessWidget {
   final String userRole;
   final int selectedIndex;
   final Function(int) onItemSelected;
-  
+
   const NavigationDrawer({
     super.key,
     required this.userId,
@@ -44,15 +44,12 @@ class NavigationDrawer extends StatelessWidget {
                 ),
                 Text(
                   userRole,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
           ),
-          
+
           // Menu Item 1: Dashboard
           ListTile(
             leading: const Icon(Icons.dashboard),
@@ -63,7 +60,7 @@ class NavigationDrawer extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          
+
           // Menu Item 2: My Studies
           ListTile(
             leading: const Icon(Icons.book),
@@ -74,7 +71,7 @@ class NavigationDrawer extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          
+
           // Menu Item 3: Create Study (Only for Professors)
           if (userRole == "Professor")
             ListTile(
@@ -86,9 +83,18 @@ class NavigationDrawer extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
-          
+          if (userRole == "Professor")
+            ListTile(
+              leading: const Icon(Icons.quiz),
+              title: const Text('Create Question'),
+              tileColor: selectedIndex == 3 ? Colors.blue.shade50 : null,
+              onTap: () {
+                onItemSelected(3);
+                Navigator.pop(context);
+              },
+            ),
           const Divider(),
-          
+
           // Menu Item 4: Settings
           ListTile(
             leading: const Icon(Icons.settings),
@@ -97,7 +103,7 @@ class NavigationDrawer extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
-          
+
           // Menu Item 5: Logout
           ListTile(
             leading: const Icon(Icons.logout),
