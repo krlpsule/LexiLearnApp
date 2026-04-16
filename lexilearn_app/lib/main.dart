@@ -81,6 +81,7 @@ class _MainScreenState extends State<MainScreen> {
       // Body changes based on selected menu
       body: _selectedIndex == 0
           ? DashboardScreen(
+              userId: widget.userId,
               username: widget.username,
               userRole: widget.userRole,
             )
