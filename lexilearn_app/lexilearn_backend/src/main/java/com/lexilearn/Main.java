@@ -191,5 +191,11 @@ public class Main {
         get("/studies", (req, res) -> {
             return gson.toJson(studyDAO.getAllStudies());
         });
+        
+        // GET PROFESSOR DASHBOARD STATS
+        get("/professor/stats", (req, res) -> {
+            int userId = Integer.parseInt(req.queryParams("userId"));
+            return gson.toJson(studyDAO.getProfessorStatistics(userId));
+        });
     }
 }
