@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class Main {
 
-    // Sınıf seviyesi değişkenler (Effectively final sorununu çözer)
     private static UserDAO userDAO;
     private static DomainDAO domainDAO;
     private static StudyDAO studyDAO;
@@ -18,8 +17,7 @@ public class Main {
         System.out.println("🚀🚀🚀 LEXILEARN BACKEND CALISIYOR 🚀🚀🚀");
         port(8080);
 
-        // 1. CORS Pre-flight (Ön İzin) Ayarı (En Kritik Kısım)
-        // Chrome'un gönderdiği OPTIONS isteklerine evrensel olarak izin verir.
+        // 1. CORS Ayarları
         options("/*", (req, res) -> {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -29,57 +27,48 @@ public class Main {
             if (accessControlRequestHeaders != null) {
                 res.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
             }
-            String accessControlRequestMethod = req.headers("Access-Control-Request-Method");
-            if (accessControlRequestMethod != null) {
-                res.header("Access-Control-Allow-Methods", accessControlRequestMethod);
-            }
             return "OK";
         });
 
-        options("/register", (req, res) -> "OK");
-        options("/login", (req, res) -> "OK");
-
-        // 2. Tüm İstekler İçin CORS Başlıkları ve Loglama
         before((req, res) -> {
             System.out.println("GELEN İSTEK: " + req.requestMethod() + " " + req.pathInfo());
             res.header("Access-Control-Allow-Origin", "*");
-            res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin");
-
             if (!req.requestMethod().equals("OPTIONS")) {
-                res.type("application/json"); // Yanıt tipini JSON yap
+                res.type("application/json");
             }
         });
 
-        // 3. Veritabanı Bağlantıları
+        // 2. DAO Başlatma
         try {
-            System.out.println("Veritabanı bağlantıları başlatılıyor...");
             userDAO = new UserDAO();
             domainDAO = new DomainDAO();
             studyDAO = new StudyDAO();
             questionDAO = new QuestionDAO();
             System.out.println("✅ Veritabanı bağlantıları BAŞARILI!");
         } catch (Exception e) {
-            System.out.println("🚨 DİKKAT: Veritabanı başlatılırken ÇÖKTÜ!");
+            System.out.println("🚨 Veritabanı başlatılırken hata oluştu!");
             e.printStackTrace();
         }
 
         Gson gson = new Gson();
 
         // ==========================================
-        // USER STORY 1: AUTHENTICATION
+        // AUTHENTICATION & PROFILE
+        // ==========================================
+
+        // ==========================================
+        // AUTHENTICATION & PROFILE
         // ==========================================
 
         post("/register", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
                 JsonObject body = gson.fromJson(req.body(), JsonObject.class);
-                String username = body.get("username").getAsString();
-                String email = body.get("email").getAsString();
-                String password = body.get("password").getAsString();
-                String role = body.get("role").getAsString();
-
-                boolean isRegistered = userDAO.registerUser(username, email, password, role);
+                boolean isRegistered = userDAO.registerUser(
+                        body.get("username").getAsString(),
+                        body.get("email").getAsString(),
+                        body.get("password").getAsString(),
+                        body.get("role").getAsString());
 
                 if (isRegistered) {
                     res.status(201);
@@ -92,8 +81,8 @@ public class Main {
             } catch (Exception e) {
                 res.status(500);
                 responseJson.addProperty("success", false);
-                responseJson.addProperty("error", "Server error processing registration.");
-                e.printStackTrace(); // Olası hataları Java konsolunda görmek için
+                responseJson.addProperty("error", "Server error");
+                e.printStackTrace();
             }
             return responseJson.toString();
         });
@@ -102,10 +91,9 @@ public class Main {
             JsonObject responseJson = new JsonObject();
             try {
                 JsonObject body = gson.fromJson(req.body(), JsonObject.class);
-                String email = body.get("email").getAsString();
-                String password = body.get("password").getAsString();
-
-                User loggedInUser = userDAO.loginUser(email, password);
+                User loggedInUser = userDAO.loginUser(
+                        body.get("email").getAsString(),
+                        body.get("password").getAsString());
 
                 if (loggedInUser != null) {
                     res.status(200);
@@ -121,57 +109,108 @@ public class Main {
             } catch (Exception e) {
                 res.status(500);
                 responseJson.addProperty("success", false);
-                responseJson.addProperty("error", "Server error processing login.");
+                responseJson.addProperty("error", "Server error");
+                e.printStackTrace();
+            }
+            return responseJson.toString();
+        });
+        // ==========================================
+        // STUDENT STUDY ENDPOINTS
+        // ==========================================
+
+        get("/api/student/ongoing", (req, res) -> {
+            int userId = Integer.parseInt(req.queryParams("userId"));
+            return gson.toJson(studyDAO.getOngoingStudies(userId));
+        });
+
+        get("/api/student/available", (req, res) -> {
+            int userId = Integer.parseInt(req.queryParams("userId"));
+            return gson.toJson(studyDAO.getAvailableStudies(userId));
+        });
+
+        post("/api/student/start", (req, res) -> {
+            JsonObject responseJson = new JsonObject();
+            try {
+                JsonObject body = gson.fromJson(req.body(), JsonObject.class);
+                int userId = body.get("userId").getAsInt();
+                int studyId = body.get("studyId").getAsInt();
+
+                boolean success = studyDAO.startStudy(userId, studyId);
+
+                if (success) {
+                    res.status(200);
+                    responseJson.addProperty("success", true);
+                } else {
+                    res.status(400);
+                    responseJson.addProperty("success", false);
+                }
+            } catch (Exception e) {
+                res.status(500);
+                responseJson.addProperty("success", false);
+                e.printStackTrace();
+            }
+            return responseJson.toString();
+        });
+        // Bir derse ait soruları getirir
+        get("/api/student/study/questions", (req, res) -> {
+            try {
+                int studyId = Integer.parseInt(req.queryParams("studyId"));
+                return gson.toJson(questionDAO.getQuestionsForStudy(studyId));
+            } catch (Exception e) {
+                res.status(500);
+                return "{\"error\":\"Server error\"}";
+            }
+        });
+
+        post("/api/student/study/submit-answer", (req, res) -> {
+            JsonObject responseJson = new JsonObject();
+            try {
+                JsonObject body = gson.fromJson(req.body(), JsonObject.class);
+                int userId = body.get("userId").getAsInt();
+                int studyId = body.get("studyId").getAsInt();
+                int questionId = body.get("questionId").getAsInt();
+
+                double newRate = studyDAO.submitAnswerAndUpdateProgress(userId, studyId, questionId);
+
+                if (newRate >= 0) {
+                    res.status(200);
+                    responseJson.addProperty("success", true);
+                    responseJson.addProperty("newCompletionRate", newRate);
+                } else {
+                    res.status(400);
+                    responseJson.addProperty("success", false);
+                }
+            } catch (Exception e) {
+                res.status(500);
+                responseJson.addProperty("success", false);
                 e.printStackTrace();
             }
             return responseJson.toString();
         });
 
         // ==========================================
-        // USER STORY 2: PROFILE MANAGEMENT
+        // PROFESSOR & CONTENT MANAGEMENT
         // ==========================================
-
-        put("/user/username", (req, res) -> {
-            int userId = Integer.parseInt(req.queryParams("userId"));
-            String newUsername = req.queryParams("newUsername");
-            boolean success = userDAO.updateUsername(userId, newUsername);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-            return gson.toJson(result);
-        });
-
-        put("/user/password", (req, res) -> {
-            int userId = Integer.parseInt(req.queryParams("userId"));
-            String currentHash = req.queryParams("currentHash");
-            String newHash = req.queryParams("newHash");
-            boolean success = userDAO.updatePassword(userId, currentHash, newHash);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-            return gson.toJson(result);
-        });
-
-        // ==========================================
-        // USER STORY 4: EDUCATIONAL CONTENT
-        // ==========================================
-
         post("/domain", (req, res) -> {
             String domainName = req.queryParams("domainName");
             boolean success = domainDAO.insertDomain(domainName);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-            return gson.toJson(result);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
         });
 
+        // Yeni Ders (Study) Ekleme
         post("/study", (req, res) -> {
             int domainId = Integer.parseInt(req.queryParams("domainId"));
             String title = req.queryParams("title");
             String level = req.queryParams("level");
             boolean success = studyDAO.insertStudy(domainId, title, level);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-            return gson.toJson(result);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
         });
 
+        // Yeni Soru (Question) Ekleme
         post("/question", (req, res) -> {
             int studyId = Integer.parseInt(req.queryParams("studyId"));
             String text = req.queryParams("text");
@@ -179,23 +218,18 @@ public class Main {
             String options = req.queryParams("options");
             String level = req.queryParams("level");
             boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", success);
-            return gson.toJson(result);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
         });
 
-        get("/domains", (req, res) -> {
-            return gson.toJson(domainDAO.getAllDomains());
-        });
-
-        get("/studies", (req, res) -> {
-            return gson.toJson(studyDAO.getAllStudies());
-        });
-        
-        // GET PROFESSOR DASHBOARD STATS
         get("/professor/stats", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(studyDAO.getProfessorStatistics(userId));
         });
+
+        get("/domains", (req, res) -> gson.toJson(domainDAO.getAllDomains()));
+
+        get("/studies", (req, res) -> gson.toJson(studyDAO.getAllStudies()));
     }
 }

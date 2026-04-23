@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class OngoingStudy {
   final int studyId;
   final String title;
@@ -45,6 +47,41 @@ class AvailableStudy {
       studyId: json['studyId'],
       title: json['title'],
       domainName: json['domainName'],
+      difficultyLevel: json['difficultyLevel'],
+    );
+  }
+}
+
+class Question {
+  final int questionId;
+  final String questionText;
+  final String correctAnswer;
+  final List<String> options;
+  final String difficultyLevel;
+
+  Question({
+    required this.questionId,
+    required this.questionText,
+    required this.correctAnswer,
+    required this.options,
+    required this.difficultyLevel,
+  });
+
+  factory Question.fromJson(Map<String, dynamic> json) {
+    List<String> parsedOptions = [];
+    try {
+      if (json['optionsJson'] != null) {
+        parsedOptions = List<String>.from(jsonDecode(json['optionsJson']));
+      }
+    } catch (e) {
+      print("Error parsing options JSON: $e");
+    }
+
+    return Question(
+      questionId: json['questionId'],
+      questionText: json['questionText'],
+      correctAnswer: json['correctAnswer'],
+      options: parsedOptions,
       difficultyLevel: json['difficultyLevel'],
     );
   }

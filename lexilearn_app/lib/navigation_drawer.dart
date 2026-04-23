@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'login_screen.dart';
 
 class NavigationDrawer extends StatelessWidget {
   final int userId;
@@ -104,18 +105,19 @@ class NavigationDrawer extends StatelessWidget {
             },
           ),
 
-         // Menu Item 5: Logout
+          // Menu Item 5: Logout
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
               // 1. Close the drawer first (optional, but good practice)
-              Navigator.pop(context); 
-              
+              Navigator.pop(context);
+
               // 2. Navigate to LoginScreen and clear all previous routes
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (Route<dynamic> route) => false, // This removes all previous routes from the stack
+                (Route<dynamic> route) =>
+                    false, // This removes all previous routes from the stack
               );
             },
           ),

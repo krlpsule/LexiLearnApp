@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'study_service.dart';
 import 'study_models.dart';
+import 'study_quiz_screen.dart'; // Soru ekranı import edildi
 
 class MyStudiesScreen extends StatefulWidget {
   final int userId;
@@ -52,10 +53,7 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildOngoingList(),
-          _buildAvailableList(),
-        ],
+        children: [_buildOngoingList(), _buildAvailableList()],
       ),
     );
   }
@@ -177,7 +175,11 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.celebration_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.celebration_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'No available studies',
@@ -229,7 +231,8 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => _openStudy(studyId),
+        // HATA BURADAYDI, 3 PARAMETRE EKLENDİ
+        onTap: () => _openStudy(studyId, title, progress ?? 0.0),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -279,10 +282,7 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
                             color: Colors.blue,
                           ),
                         ),
-                        const Text(
-                          'complete',
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        const Text('complete', style: TextStyle(fontSize: 12)),
                       ],
                     ),
                   if (!isOngoing)
@@ -311,23 +311,49 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
     );
   }
 
-  void _startStudy(int studyId) {
-    _openStudy(studyId);
+  void _startStudy(int studyId) async {
+    bool success = await _studyService.startStudy(widget.userId, studyId);
+
+    if (success && mounted) {
+      setState(() {
+        _loadData();
+      });
+      _tabController.animateTo(0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Study started successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to start study.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _openStudy(int studyId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Open Study'),
-        content: Text('Opening study ID: $studyId\n\n(Questions page will be added by another team member)'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+  // YENİ SAYFAYI AÇAN METOT
+  void _openStudy(int studyId, String title, double currentProgress) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StudyQuizScreen(
+          userId: widget.userId,
+          studyId: studyId,
+          studyTitle: title,
+          initialProgress: currentProgress,
+        ),
       ),
     );
+
+    if (result == true) {
+      setState(() {
+        _loadData();
+      });
+    }
   }
 }
