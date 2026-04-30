@@ -13,7 +13,8 @@ public class StudyDAO {
 
     public List<Map<String, Object>> getAllStudies() {
         List<Map<String, Object>> studies = new ArrayList<>();
-        String sql = "SELECT study_id, title FROM Studies";
+        // DÜZELTME: SQL sorgusuna domain_id eklendi
+        String sql = "SELECT study_id, title, domain_id FROM Studies";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -23,6 +24,8 @@ public class StudyDAO {
                 Map<String, Object> study = new HashMap<>();
                 study.put("studyId", rs.getInt("study_id"));
                 study.put("title", rs.getString("title"));
+                // DÜZELTME: Flutter'ın filtreleme yapabilmesi için domainId JSON'a eklendi
+                study.put("domainId", rs.getInt("domain_id"));
                 studies.add(study);
             }
         } catch (SQLException e) {

@@ -88,9 +88,9 @@ class _MainScreenState extends State<MainScreen> {
           : _selectedIndex == 1
           ? MyStudiesScreen(userId: widget.userId)
           : _selectedIndex == 2 && widget.userRole == "Professor"
-          ? const CreateCourseScreen()
+          ?  CreateCourseScreen()
           : _selectedIndex == 3 && widget.userRole == "Professor"
-          ? const CreateQuestionScreen()
+          ?  CreateQuestionScreen()
           : const Center(
               child: Text(
                 'Coming Soon',
