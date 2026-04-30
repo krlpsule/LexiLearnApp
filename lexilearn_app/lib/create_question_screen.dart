@@ -14,6 +14,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   final List<TextEditingController> _answerControllers = [
     TextEditingController(),
     TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
   ];
   int? _correctAnswerIndex;
 
