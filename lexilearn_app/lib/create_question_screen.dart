@@ -18,8 +18,11 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   int? _correctAnswerIndex;
 
   String? _selectedLevel;
+  String? _selectedDomainId;  // YENİ
   String? _selectedStudyId;
+  List<dynamic> _domains = [];  // YENİ
   List<dynamic> _studies = [];
+  List<dynamic> _filteredStudies = [];  // YENİ
 
   final List<String> _levels = ['Beginner', 'Intermediate', 'Advanced'];
   final String baseUrl = 'http://10.0.2.2:8080';
@@ -27,7 +30,22 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchDomains();  // YENİ — önce domainleri çek
     _fetchStudies();
+  }
+
+  // YENİ — Domain'leri çek
+  Future<void> _fetchDomains() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/domains'));
+      if (response.statusCode == 200) {
+        setState(() {
+          _domains = jsonDecode(response.body);
+        });
+      }
+    } catch (e) {
+      print('Error fetching domains: $e');
+    }
   }
 
   Future<void> _fetchStudies() async {
@@ -36,17 +54,24 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       if (response.statusCode == 200) {
         setState(() {
           _studies = jsonDecode(response.body);
-          if (_selectedStudyId != null &&
-              !_studies.any(
-                (s) => s['studyId'].toString() == _selectedStudyId,
-              )) {
-            _selectedStudyId = null;
-          }
+          _filterStudies();  // YENİ
         });
       }
     } catch (e) {
       print('Error fetching studies: $e');
     }
+  }
+
+  // YENİ — Seçili Domain'e göre Study'leri filtrele
+  void _filterStudies() {
+    if (_selectedDomainId == null) {
+      _filteredStudies = [];
+    } else {
+      _filteredStudies = _studies.where((s) {
+        return s['domainId'].toString() == _selectedDomainId;
+      }).toList();
+    }
+    _selectedStudyId = null;  // Domain değişince Study sıfırlansın
   }
 
   void _addAnswer() {
@@ -67,8 +92,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         _answerControllers.removeAt(index);
         if (_correctAnswerIndex == index) {
           _correctAnswerIndex = null;
-        } else if (_correctAnswerIndex != null &&
-            _correctAnswerIndex! > index) {
+        } else if (_correctAnswerIndex != null && _correctAnswerIndex! > index) {
           _correctAnswerIndex = _correctAnswerIndex! - 1;
         }
       });
@@ -80,14 +104,18 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   }
 
   Future<void> _saveQuestion() async {
+    if (_selectedDomainId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a Domain first.')),
+      );
+      return;
+    }
     if (_selectedStudyId == null ||
         _questionController.text.trim().isEmpty ||
         _selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please select a Study, Question Text, and Difficulty Level.',
-          ),
+          content: Text('Please select a Study, Question Text, and Difficulty Level.'),
         ),
       );
       return;
@@ -104,9 +132,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       if (controller.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Please fill in all answer fields or remove empty options.',
-            ),
+            content: Text('Please fill in all answer fields or remove empty options.'),
           ),
         );
         return;
@@ -133,7 +159,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Question saved successfully!')),
         );
-
         _questionController.clear();
         for (var controller in _answerControllers) {
           controller.clear();
@@ -142,6 +167,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
           _correctAnswerIndex = null;
           _selectedLevel = null;
           _selectedStudyId = null;
+          _selectedDomainId = null;
+          _filteredStudies = [];
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,6 +191,33 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            // ── 1. ÖNCE DOMAIN SEÇ (YENİ) ──
+            const Text(
+              'Select Category (Domain)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedDomainId,
+              hint: const Text('Select a Category'),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: _domains.map<DropdownMenuItem<String>>((domain) {
+                return DropdownMenuItem<String>(
+                  value: domain['id'].toString(),
+                  child: Text(domain['name']),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedDomainId = value;
+                  _filterStudies();  // Domain seçilince Study'leri filtrele
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // ── 2. SONRA STUDY SEÇ (filtrelenmiş) ──
             const Text(
               'Which Study to Add To?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -171,17 +225,23 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedStudyId,
-              items: _studies.map<DropdownMenuItem<String>>((study) {
+              hint: const Text(_selectedDomainId == null
+                  ? 'First select a category above'
+                  : 'Select a Study'),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
                 return DropdownMenuItem<String>(
                   value: study['studyId'].toString(),
                   child: Text(study['title']),
                 );
               }).toList(),
-              onChanged: (value) => setState(() => _selectedStudyId = value),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              hint: const Text('Select a Study'),
+              onChanged: _selectedDomainId == null
+                  ? null
+                  : (value) => setState(() => _selectedStudyId = value),
             ),
             const SizedBox(height: 24),
+
+            // ── Soru Metni ──
             const Text(
               'Question',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -196,6 +256,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // ── Zorluk Seviyesi ──
             const Text(
               'Difficulty Level',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -204,16 +266,16 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             DropdownButtonFormField<String>(
               value: _selectedLevel,
               items: _levels
-                  .map(
-                    (level) =>
-                        DropdownMenuItem(value: level, child: Text(level)),
-                  )
+                  .map((level) =>
+                      DropdownMenuItem(value: level, child: Text(level)))
                   .toList(),
               onChanged: (val) => setState(() => _selectedLevel = val),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               hint: const Text('Select Level'),
             ),
             const SizedBox(height: 24),
+
+            // ── Cevaplar ──
             const Text(
               'Answers',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -235,9 +297,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                       onChanged: (value) =>
                           setState(() => _correctAnswerIndex = value),
                       activeColor: Colors.green,
-                      fillColor: WidgetStateProperty.resolveWith<Color>((
-                        states,
-                      ) {
+                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
                         if (_correctAnswerIndex == index) return Colors.green;
                         return Colors.red;
                       }),
@@ -252,10 +312,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.remove_circle_outline,
-                        color: Colors.red,
-                      ),
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
                       onPressed: () => _removeAnswer(index),
                     ),
                   ],
@@ -268,6 +325,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               label: const Text('Add Answer'),
             ),
             const SizedBox(height: 24),
+
+            // ── Kaydet Butonu ──
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
