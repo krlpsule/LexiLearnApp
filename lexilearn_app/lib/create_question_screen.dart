@@ -36,6 +36,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     _fetchStudies();
   }
 
+  // Bellek sızıntısını önlemek için controller'ları temizliyoruz
   @override
   void dispose() {
     _questionController.dispose();
@@ -48,7 +49,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   Future<void> _fetchDomains() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/domains'));
-      if (!mounted) return; // BuildContext güvenliği
+      if (!mounted) return; // Asenkron işlem sonrası context kontrolü
 
       if (response.statusCode == 200) {
         setState(() {
@@ -56,7 +57,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error fetching domains: $e'); // avoid_print düzeltmesi
+      debugPrint('Error fetching domains: $e'); // Print yerine debugPrint
     }
   }
 
@@ -72,7 +73,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error fetching studies: $e'); // avoid_print düzeltmesi
+      debugPrint('Error fetching studies: $e');
     }
   }
 
@@ -124,7 +125,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       );
       return;
     }
-
     if (_correctAnswerIndex == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please mark the correct answer.')),
@@ -152,7 +152,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         },
       );
 
-      if (!mounted) return; // Async sonrası context kullanımı koruması
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -198,7 +198,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const Text('Select Category (Domain)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: _selectedDomainId, // 'value' yerine 'initialValue' kullanıldı
+              initialValue: _selectedDomainId, // Linter hatası için value -> initialValue
               hint: const Text('Select a Category'),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _domains.map<DropdownMenuItem<String>>((domain) {
@@ -218,7 +218,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const Text('Which Study to Add To?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: _selectedStudyId, // 'value' yerine 'initialValue' kullanıldı
+              initialValue: _selectedStudyId,
               hint: Text(_selectedDomainId == null ? 'First select a category' : 'Select a Study'),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
@@ -241,7 +241,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const Text('Difficulty Level', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              initialValue: _selectedLevel, // 'value' yerine 'initialValue' kullanıldı
+              initialValue: _selectedLevel,
               items: _levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
               onChanged: (val) => setState(() => _selectedLevel = val),
               decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -250,7 +250,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const SizedBox(height: 24),
             const Text('Answers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            // RadioGroup kullanımı yerine mevcut yapı mounted kontrolleriyle modernize edildi
             ...List.generate(_answerControllers.length, (index) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
