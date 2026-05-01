@@ -5,7 +5,7 @@ class UserInfoScreen extends StatefulWidget {
   final int userId;
 
   const UserInfoScreen({super.key, required this.userId});
-
+  
   @override
   State<UserInfoScreen> createState() => _UserInfoScreenState();
 }
