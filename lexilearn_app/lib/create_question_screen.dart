@@ -36,17 +36,29 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     _fetchStudies();
   }
 
+  // Arkadaşının eklediği: Bellek sızıntısını önlemek için controller'ları temizliyoruz
+  @override
+  void dispose() {
+    _questionController.dispose();
+    for (var controller in _answerControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   // Domain'leri çek
   Future<void> _fetchDomains() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/domains'));
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         setState(() {
           _domains = jsonDecode(response.body);
         });
       }
     } catch (e) {
-      print('Error fetching domains: $e');
+      debugPrint('Error fetching domains: $e');
     }
   }
 
@@ -54,15 +66,16 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   Future<void> _fetchStudies() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/studies'));
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         setState(() {
           _studies = jsonDecode(response.body);
-          print('BACKENDDEN GELEN DERSLER: $_studies');
           _filterStudies();
         });
       }
     } catch (e) {
-      print('Error fetching studies: $e');
+      debugPrint('Error fetching studies: $e');
     }
   }
 
@@ -72,7 +85,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       _filteredStudies = [];
     } else {
       _filteredStudies = _studies.where((s) {
-        // Backend'den 'domainId' veya 'domain_id' gelme ihtimaline karşı kontrol
         String sDomainId = (s['domainId'] ?? s['domain_id'] ?? '').toString();
         return sDomainId == _selectedDomainId;
       }).toList();
@@ -140,6 +152,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       return;
     }
 
+    // Senin yazdığın detaylı kontrol mekanizması (Kullanıcıya tam nerenin boş olduğunu söyler)
     List<String> options = [];
     for (var controller in _answerControllers) {
       if (controller.text.trim().isEmpty) {
@@ -156,64 +169,63 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       options.add(controller.text.trim());
     }
 
-    String correctAnswer = options[_correctAnswerIndex!];
-    String optionsJson = jsonEncode(options);
-
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/question'),
         body: {
           'studyId': _selectedStudyId!,
           'text': _questionController.text.trim(),
-          'answer': correctAnswer,
-          'options': optionsJson,
+          'answer': options[_correctAnswerIndex!],
+          'options': jsonEncode(options),
           'level': _selectedLevel!,
         },
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Question saved successfully! 🎉'),
-              backgroundColor: Colors.green,
-            ),
-          );
+      if (!mounted) return;
 
-          // Formu temizle
-          _questionController.clear();
-          for (var controller in _answerControllers) {
-            controller.clear();
-          }
-          setState(() {
-            _correctAnswerIndex = null;
-            _selectedLevel = null;
-            _selectedStudyId = null;
-            // Domain'i bilerek sıfırlamıyoruz ki hoca aynı konuya hızlıca 2. soruyu yazabilsin!
-          });
-        }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Question saved successfully! 🎉'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _resetForm(); // Arkadaşının eklediği reset metodu çağrıldı
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Failed to save question! Error: ${response.statusCode}',
-              ),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Connection error: $e'),
+            content: Text(
+              'Failed to save question! Error: ${response.statusCode}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Connection error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
+
+  // Arkadaşının eklediği reset metodu. SENİN UX tasarımına göre modifiye edildi:
+  // Domain'i bilerek sıfırlamıyoruz ki hoca aynı konuya hızlıca 2. soruyu yazabilsin!
+  void _resetForm() {
+    _questionController.clear();
+    for (var controller in _answerControllers) {
+      controller.clear();
+    }
+    setState(() {
+      _correctAnswerIndex = null;
+      _selectedLevel = null;
+      _selectedStudyId = null;
+      // _selectedDomainId = null; // Yoruma alındı: Domain seçili kalmaya devam etsin.
+      // _filteredStudies = [];    // Yoruma alındı: Study'ler listede kalmaya devam etsin.
+    });
   }
 
   @override
@@ -239,7 +251,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select a Category'),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _domains.map<DropdownMenuItem<String>>((domain) {
-                // HATA BURADAYDI: Null-safety ve doğru isimlendirme eklendi
                 String id =
                     (domain['domainId'] ??
                             domain['domain_id'] ??
@@ -261,13 +272,13 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               onChanged: (value) {
                 setState(() {
                   _selectedDomainId = value;
-                  _filterStudies(); // Domain seçilince Study'leri filtrele
+                  _filterStudies();
                 });
               },
             ),
             const SizedBox(height: 24),
 
-            // ── 2. SONRA STUDY SEÇ (filtrelenmiş) ──
+            // ── 2. SONRA STUDY SEÇ ──
             const Text(
               'Which Study to Add To?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -282,7 +293,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               ),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
-                // HATA BURADAYDI: Null-safety ve doğru isimlendirme eklendi
                 String id = (study['studyId'] ?? study['study_id'] ?? '')
                     .toString();
                 String title =
@@ -310,7 +320,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               controller: _questionController,
               maxLines: 3,
               decoration: const InputDecoration(
-                hintText: 'Enter the question',
+                hintText: 'Enter question',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -325,10 +335,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             DropdownButtonFormField<String>(
               value: _selectedLevel,
               items: _levels
-                  .map(
-                    (level) =>
-                        DropdownMenuItem(value: level, child: Text(level)),
-                  )
+                  .map((l) => DropdownMenuItem(value: l, child: Text(l)))
                   .toList(),
               onChanged: (val) => setState(() => _selectedLevel = val),
               decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -340,11 +347,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             const Text(
               'Answers',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Click the circle next to the correct answer',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),
             ...List.generate(_answerControllers.length, (index) {
@@ -358,13 +360,12 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                       onChanged: (value) =>
                           setState(() => _correctAnswerIndex = value),
                       activeColor: Colors.green,
+                      // Senin UX iyileştirmen: Seçili olmayanlar gri
                       fillColor: WidgetStateProperty.resolveWith<Color>((
                         states,
                       ) {
                         if (_correctAnswerIndex == index) return Colors.green;
-                        return Colors
-                            .grey
-                            .shade400; // Seçili olmayanları gri yaptık, kırmızı kafa karıştırabilirdi
+                        return Colors.grey.shade400;
                       }),
                     ),
                     Expanded(
