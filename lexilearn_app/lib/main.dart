@@ -51,7 +51,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar with clickable username (Task 3.2)
       appBar: AppBar(
         title: const Text('LexiLearn'),
         backgroundColor: Colors.blue,
@@ -65,7 +64,6 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
 
-      // Sidebar drawer (Task 3.1)
       drawer: NavigationDrawer(
         userId: widget.userId,
         username: widget.username,
@@ -78,25 +76,53 @@ class _MainScreenState extends State<MainScreen> {
         },
       ),
 
-      // Body changes based on selected menu
-      body: _selectedIndex == 0
-          ? DashboardScreen(
-              userId: widget.userId,
-              username: widget.username,
-              userRole: widget.userRole,
-            )
-          : _selectedIndex == 1
-          ? MyStudiesScreen(userId: widget.userId)
-          : _selectedIndex == 2 && widget.userRole == "Professor"
-          ?  CreateCourseScreen()
-          : _selectedIndex == 3 && widget.userRole == "Professor"
-          ?  CreateQuestionScreen()
-          : const Center(
-              child: Text(
-                'Coming Soon',
-                style: TextStyle(fontSize: 24, color: Colors.grey),
-              ),
-            ),
+      body: _getBody(),
     );
+  }
+
+  Widget _getBody() {
+    if (widget.userRole == "Professor") {
+      if (_selectedIndex == 1) {
+        _selectedIndex = 0; 
+      }
+      
+      switch (_selectedIndex) {
+        case 0:
+          return DashboardScreen(
+            userId: widget.userId,
+            username: widget.username,
+            userRole: widget.userRole,
+          );
+        case 2:
+          return CreateCourseScreen();
+        case 3:
+          return CreateQuestionScreen();
+        default:
+          return const Center(
+            child: Text(
+              'Coming Soon',
+              style: TextStyle(fontSize: 24, color: Colors.grey),
+            ),
+          );
+      }
+    }
+    
+    switch (_selectedIndex) {
+      case 0:
+        return DashboardScreen(
+          userId: widget.userId,
+          username: widget.username,
+          userRole: widget.userRole,
+        );
+      case 1:
+        return MyStudiesScreen(userId: widget.userId);
+      default:
+        return const Center(
+          child: Text(
+            'Coming Soon',
+            style: TextStyle(fontSize: 24, color: Colors.grey),
+          ),
+        );
+    }
   }
 }
