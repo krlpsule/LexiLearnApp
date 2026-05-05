@@ -37,21 +37,39 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
 
   Future<void> _loadQuestions() async {
     try {
+      // Backend'e userId'yi de gönderiyoruz ki çözülmüş soruları bilelim
       final questions = await _studyService.getQuestionsForStudy(
         widget.studyId,
+        widget.userId, 
       );
+      
       setState(() {
         _questions = questions;
         _isLoading = false;
+
+        if (_questions.isNotEmpty) {
+          // LİSTEYİ TARA VE ÇÖZÜLMEMİŞ İLK SORUYU BUL (KALDIĞI YER)
+          int resumeIndex = _questions.indexWhere((q) => q.isAnswered == false);
+
+          if (resumeIndex != -1) {
+            // Çözülmemiş soru bulundu, testi oradan başlat
+            _currentIndex = resumeIndex;
+          } else {
+            // Hepsi çözülmüşse kullanıcıyı son soruda bırak
+            _currentIndex = _questions.length - 1; 
+          }
+        }
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading questions: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading questions: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -85,6 +103,8 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
     if (mounted && newProgress != null) {
       setState(() {
         _currentProgress = newProgress;
+        // Soruyu lokal olarak da çözüldü işaretle
+        _questions[_currentIndex].isAnswered = true; 
       });
     }
 

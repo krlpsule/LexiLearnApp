@@ -5,7 +5,7 @@ import 'study_models.dart';
 class StudyService {
   // Base URL for the backend API.
   // Note: 10.0.2.2 is used for Android emulators to access the host machine's localhost.
-  static const String baseUrl = 'http://10.0.2.2:8080/api/student';
+  static const String baseUrl = 'http://10.0.2.2:8080';
 
   /// Fetches the list of studies the user has already started (Ongoing).
   Future<List<OngoingStudy>> getOngoingStudies(int userId) async {
@@ -80,24 +80,17 @@ class StudyService {
     }
   }
 
-  Future<List<Question>> getQuestionsForStudy(int studyId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/study/questions?studyId=$studyId'),
-        headers: {'Content-Type': 'application/json'},
-      );
+  // userId eklendi ve URL güncellendi
+  Future<List<Question>> getQuestionsForStudy(int studyId, int userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/questions?studyId=$studyId&userId=$userId'),
+    );
 
-      if (response.statusCode == 200) {
-        List<dynamic> jsonResponse = json.decode(response.body);
-        return jsonResponse.map((data) => Question.fromJson(data)).toList();
-      } else {
-        throw Exception('Failed to load questions: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching questions: $e');
-      throw Exception(
-        'Failed to fetch questions. Please check your connection.',
-      );
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.map((dynamic item) => Question.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load questions');
     }
   }
 

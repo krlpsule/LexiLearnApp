@@ -118,17 +118,17 @@ public class Main {
         // STUDENT STUDY ENDPOINTS
         // ==========================================
 
-        get("/api/student/ongoing", (req, res) -> {
+        get("/ongoing", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(studyDAO.getOngoingStudies(userId));
         });
 
-        get("/api/student/available", (req, res) -> {
+        get("/available", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(studyDAO.getAvailableStudies(userId));
         });
 
-        post("/api/student/start", (req, res) -> {
+        post("/start", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
                 JsonObject body = gson.fromJson(req.body(), JsonObject.class);
@@ -152,17 +152,19 @@ public class Main {
             return responseJson.toString();
         });
         // Bir derse ait soruları getirir
-        get("/api/student/study/questions", (req, res) -> {
-            try {
-                int studyId = Integer.parseInt(req.queryParams("studyId"));
-                return gson.toJson(questionDAO.getQuestionsForStudy(studyId));
-            } catch (Exception e) {
-                res.status(500);
-                return "{\"error\":\"Server error\"}";
-            }
+        // Main.java içindeki mevcut /questions endpoint'ini bununla değiştirin
+        get("/questions", (req, res) -> {
+            res.type("application/json");
+            int studyId = Integer.parseInt(req.queryParams("studyId"));
+
+            // Kullanıcının ilerlemesini bulmak için userId'yi de alıyoruz
+            String userIdParam = req.queryParams("userId");
+            int userId = userIdParam != null ? Integer.parseInt(userIdParam) : 0;
+
+            return gson.toJson(questionDAO.getQuestionsByStudy(studyId, userId));
         });
 
-        post("/api/student/study/submit-answer", (req, res) -> {
+        post("/submit-answer", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
                 JsonObject body = gson.fromJson(req.body(), JsonObject.class);

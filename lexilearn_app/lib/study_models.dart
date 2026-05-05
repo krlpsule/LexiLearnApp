@@ -58,6 +58,7 @@ class Question {
   final String correctAnswer;
   final List<String> options;
   final String difficultyLevel;
+  bool isAnswered; // YENİ EKLENEN KISIM
 
   Question({
     required this.questionId,
@@ -65,24 +66,17 @@ class Question {
     required this.correctAnswer,
     required this.options,
     required this.difficultyLevel,
+    this.isAnswered = false, // YENİ EKLENEN KISIM
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
-    List<String> parsedOptions = [];
-    try {
-      if (json['optionsJson'] != null) {
-        parsedOptions = List<String>.from(jsonDecode(json['optionsJson']));
-      }
-    } catch (e) {
-      print("Error parsing options JSON: $e");
-    }
-
     return Question(
       questionId: json['questionId'],
-      questionText: json['questionText'],
-      correctAnswer: json['correctAnswer'],
-      options: parsedOptions,
-      difficultyLevel: json['difficultyLevel'],
+      questionText: json['text'],
+      correctAnswer: json['answer'],
+      options: List<String>.from(jsonDecode(json['options'])),
+      difficultyLevel: json['level'],
+      isAnswered: json['isAnswered'] ?? false, // YENİ EKLENEN KISIM
     );
   }
 }
