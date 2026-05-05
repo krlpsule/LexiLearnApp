@@ -97,7 +97,7 @@ class StudyService {
   Future<double?> submitAnswer(int userId, int studyId, int questionId) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/study/submit-answer'),
+        Uri.parse('$baseUrl/submit-answer'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': userId,
