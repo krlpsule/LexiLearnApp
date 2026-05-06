@@ -51,7 +51,7 @@ class NavigationDrawer extends StatelessWidget {
             ),
           ),
 
-          // Menu Item 1: Dashboard
+          // Menu Item 1: Dashboard 
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
@@ -62,18 +62,19 @@ class NavigationDrawer extends StatelessWidget {
             },
           ),
 
-          // Menu Item 2: My Studies
-          ListTile(
-            leading: const Icon(Icons.book),
-            title: const Text('My Studies'),
-            tileColor: selectedIndex == 1 ? Colors.blue.shade50 : null,
-            onTap: () {
-              onItemSelected(1);
-              Navigator.pop(context);
-            },
-          ),
+          // Menu Item 2: My Studies 
+          if (userRole == "Student")
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('My Studies'),
+              tileColor: selectedIndex == 1 ? Colors.blue.shade50 : null,
+              onTap: () {
+                onItemSelected(1);
+                Navigator.pop(context);
+              },
+            ),
 
-          // Menu Item 3: Create Study (Only for Professors)
+          // Menu Item 3: Create Study 
           if (userRole == "Professor")
             ListTile(
               leading: const Icon(Icons.add_circle),
@@ -84,6 +85,8 @@ class NavigationDrawer extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
+            
+          // Menu Item 4: Create Question 
           if (userRole == "Professor")
             ListTile(
               leading: const Icon(Icons.quiz),
@@ -96,7 +99,7 @@ class NavigationDrawer extends StatelessWidget {
             ),
           const Divider(),
 
-          // Menu Item 4: Settings
+          // Menu Item 5: Settings 
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
@@ -105,19 +108,15 @@ class NavigationDrawer extends StatelessWidget {
             },
           ),
 
-          // Menu Item 5: Logout
+          // Menu Item 6: Logout 
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
-              // 1. Close the drawer first (optional, but good practice)
               Navigator.pop(context);
-
-              // 2. Navigate to LoginScreen and clear all previous routes
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (Route<dynamic> route) =>
-                    false, // This removes all previous routes from the stack
+                (Route<dynamic> route) => false,
               );
             },
           ),
