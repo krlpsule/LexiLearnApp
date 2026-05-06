@@ -37,26 +37,30 @@ public class StudyDAO {
     // To enhance Prof's user page
     public List<Map<String, Object>> getProfessorStatistics(int userId) {
         List<Map<String, Object>> stats = new ArrayList<>();
-        // Query links Studies -> Domains (to find creator) and Studies -> User_Progress
-        // (for stats)
-        String sql = "SELECT s.study_id, s.title, " +
-                "COUNT(DISTINCT p.user_id) as student_count, " +
-                "IFNULL(AVG(p.completion_rate), 0) as avg_success " +
-                "FROM Studies s " +
-                "JOIN Domains d ON s.domain_id = d.domain_id " +
-                "LEFT JOIN User_Progress p ON s.study_id = p.study_id " +
-                "WHERE d.created_by = ? " +
-                "GROUP BY s.study_id, s.title";
+        
+        // Use LEFT JOIN so newly created courses without quizzes still appear
+        String sql = "SELECT d.name AS course_name, s.study_id, s.title, " +
+                     "COUNT(DISTINCT p.user_id) AS student_count, " +
+                     "IFNULL(AVG(p.completion_rate), 0) AS avg_success " +
+                     "FROM Domains d " +
+                     "LEFT JOIN Studies s ON d.domain_id = s.domain_id " +
+                     "LEFT JOIN User_Progress p ON s.study_id = p.study_id " +
+                     "WHERE d.created_by = ? " +
+                     "GROUP BY d.domain_id, d.name, s.study_id, s.title";
 
         try (Connection conn = DatabaseManager.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> stat = new HashMap<>();
-                    stat.put("studyId", rs.getInt("study_id"));
-                    stat.put("title", rs.getString("title"));
+                    stat.put("courseName", rs.getString("course_name"));
+                    
+                    // study_id and title will be null if the course has no quizzes yet
+                    stat.put("studyId", rs.getObject("study_id")); 
+                    stat.put("title", rs.getString("title") != null ? rs.getString("title") : "No quizzes yet");
+                    
                     stat.put("studentCount", rs.getInt("student_count"));
                     stat.put("avgSuccess", rs.getDouble("avg_success"));
                     stats.add(stat);
