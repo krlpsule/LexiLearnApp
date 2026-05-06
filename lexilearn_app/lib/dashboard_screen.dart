@@ -115,11 +115,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
+                                  onPressed: () async {
+                                    // 1. Await the navigation to the create screen
+                                    await Navigator.push(
                                       context,
                                       MaterialPageRoute(builder: (context) => const CreateQuestionScreen()), 
                                     );
+                                    // 2. This code runs ONLY after the user hits 'back' from the CreateQuestionScreen
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    _fetchProfessorStats(); // Fetch fresh data from the database
                                   },
                                   icon: const Icon(Icons.add),
                                   label: const Text('Wanna add question to that quiz?'),
