@@ -19,14 +19,12 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   ];
   int? _correctAnswerIndex;
 
-  String? _selectedLevel;
   String? _selectedDomainId;
   String? _selectedStudyId;
   List<dynamic> _domains = [];
   List<dynamic> _studies = [];
   List<dynamic> _filteredStudies = [];
 
-  final List<String> _levels = ['Beginner', 'Intermediate', 'Advanced'];
   final String baseUrl = 'http://10.0.2.2:8080';
 
   @override
@@ -36,7 +34,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     _fetchStudies();
   }
 
-  // Arkadaşının eklediği: Bellek sızıntısını önlemek için controller'ları temizliyoruz
   @override
   void dispose() {
     _questionController.dispose();
@@ -46,12 +43,10 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     super.dispose();
   }
 
-  // Domain'leri çek
   Future<void> _fetchDomains() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/domains'));
       if (!mounted) return;
-
       if (response.statusCode == 200) {
         setState(() {
           _domains = jsonDecode(response.body);
@@ -62,12 +57,10 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     }
   }
 
-  // Study'leri çek
   Future<void> _fetchStudies() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/studies'));
       if (!mounted) return;
-
       if (response.statusCode == 200) {
         setState(() {
           _studies = jsonDecode(response.body);
@@ -79,7 +72,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     }
   }
 
-  // Seçili Domain'e göre Study'leri filtrele (Null Safety eklendi)
   void _filterStudies() {
     if (_selectedDomainId == null) {
       _filteredStudies = [];
@@ -89,7 +81,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         return sDomainId == _selectedDomainId;
       }).toList();
     }
-    _selectedStudyId = null; // Domain değişince Study sıfırlansın
+    _selectedStudyId = null;
   }
 
   void _addAnswer() {
@@ -110,8 +102,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         _answerControllers.removeAt(index);
         if (_correctAnswerIndex == index) {
           _correctAnswerIndex = null;
-        } else if (_correctAnswerIndex != null &&
-            _correctAnswerIndex! > index) {
+        } else if (_correctAnswerIndex != null && _correctAnswerIndex! > index) {
           _correctAnswerIndex = _correctAnswerIndex! - 1;
         }
       });
@@ -129,14 +120,10 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       );
       return;
     }
-    if (_selectedStudyId == null ||
-        _questionController.text.trim().isEmpty ||
-        _selectedLevel == null) {
+    if (_selectedStudyId == null || _questionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please select a Study, Question Text, and Difficulty Level.',
-          ),
+          content: Text('Please select a Study and enter the Question Text.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -152,15 +139,12 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       return;
     }
 
-    // Senin yazdığın detaylı kontrol mekanizması (Kullanıcıya tam nerenin boş olduğunu söyler)
     List<String> options = [];
     for (var controller in _answerControllers) {
       if (controller.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Please fill in all answer fields or remove empty options.',
-            ),
+            content: Text('Please fill in all answer fields or remove empty options.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -177,7 +161,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
           'text': _questionController.text.trim(),
           'answer': options[_correctAnswerIndex!],
           'options': jsonEncode(options),
-          'level': _selectedLevel!,
         },
       );
 
@@ -190,13 +173,11 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        _resetForm(); // Arkadaşının eklediği reset metodu çağrıldı
+        _resetForm();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Failed to save question! Error: ${response.statusCode}',
-            ),
+            content: Text('Failed to save question! Error: ${response.statusCode}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -212,8 +193,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     }
   }
 
-  // Arkadaşının eklediği reset metodu. SENİN UX tasarımına göre modifiye edildi:
-  // Domain'i bilerek sıfırlamıyoruz ki hoca aynı konuya hızlıca 2. soruyu yazabilsin!
   void _resetForm() {
     _questionController.clear();
     for (var controller in _answerControllers) {
@@ -221,10 +200,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     }
     setState(() {
       _correctAnswerIndex = null;
-      _selectedLevel = null;
       _selectedStudyId = null;
-      // _selectedDomainId = null; // Yoruma alındı: Domain seçili kalmaya devam etsin.
-      // _filteredStudies = [];    // Yoruma alındı: Study'ler listede kalmaya devam etsin.
     });
   }
 
@@ -240,7 +216,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── 1. ÖNCE DOMAIN SEÇ ──
             const Text(
               'Select Category (Domain)',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -251,19 +226,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               hint: const Text('Select a Category'),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _domains.map<DropdownMenuItem<String>>((domain) {
-                String id =
-                    (domain['domainId'] ??
-                            domain['domain_id'] ??
-                            domain['id'] ??
-                            '')
-                        .toString();
-                String name =
-                    (domain['domainName'] ??
-                            domain['domain_name'] ??
-                            domain['name'] ??
-                            'Unknown')
-                        .toString();
-
+                String id = (domain['domainId'] ?? domain['domain_id'] ?? domain['id'] ?? '').toString();
+                String name = (domain['domainName'] ?? domain['domain_name'] ?? domain['name'] ?? 'Unknown').toString();
                 return DropdownMenuItem<String>(
                   value: id.isNotEmpty ? id : null,
                   child: Text(name),
@@ -278,7 +242,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── 2. SONRA STUDY SEÇ ──
             const Text(
               'Which Study to Add To?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -293,12 +256,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               ),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
-                String id = (study['studyId'] ?? study['study_id'] ?? '')
-                    .toString();
-                String title =
-                    (study['title'] ?? study['name'] ?? 'Unknown Study')
-                        .toString();
-
+                String id = (study['studyId'] ?? study['study_id'] ?? '').toString();
+                String title = (study['title'] ?? study['name'] ?? 'Unknown Study').toString();
                 return DropdownMenuItem<String>(
                   value: id.isNotEmpty ? id : null,
                   child: Text(title),
@@ -310,7 +269,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── Soru Metni ──
             const Text(
               'Question',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -326,24 +284,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── Zorluk Seviyesi ──
-            const Text(
-              'Difficulty Level',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedLevel,
-              items: _levels
-                  .map((l) => DropdownMenuItem(value: l, child: Text(l)))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedLevel = val),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              hint: const Text('Select Level'),
-            ),
-            const SizedBox(height: 24),
-
-            // ── Cevaplar ──
             const Text(
               'Answers',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -360,10 +300,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                       onChanged: (value) =>
                           setState(() => _correctAnswerIndex = value),
                       activeColor: Colors.green,
-                      // Senin UX iyileştirmen: Seçili olmayanlar gri
-                      fillColor: WidgetStateProperty.resolveWith<Color>((
-                        states,
-                      ) {
+                      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
                         if (_correctAnswerIndex == index) return Colors.green;
                         return Colors.grey.shade400;
                       }),
@@ -378,10 +315,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.remove_circle_outline,
-                        color: Colors.red,
-                      ),
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
                       onPressed: () => _removeAnswer(index),
                     ),
                   ],
@@ -395,7 +329,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── Kaydet Butonu ──
             SizedBox(
               width: double.infinity,
               height: 50,
