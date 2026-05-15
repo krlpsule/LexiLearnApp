@@ -12,8 +12,9 @@ import java.util.Map;
 public class QuestionDAO {
 
     public boolean insertQuestion(int studyId, String questionText, String correctAnswer, String optionsJson,
-            String difficultyLevel) {
-        String sql = "INSERT INTO Questions (study_id, question_text, correct_answer, options_json, difficulty_level) VALUES (?, ?, ?, ?, ?)";
+            String difficultyLevel, String questionType) {
+
+        String sql = "INSERT INTO Questions (study_id, question_text, correct_answer, options_json, difficulty_level, question_type) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -23,6 +24,7 @@ public class QuestionDAO {
             pstmt.setString(3, correctAnswer);
             pstmt.setString(4, optionsJson);
             pstmt.setString(5, difficultyLevel);
+            pstmt.setString(6, questionType);
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -33,12 +35,10 @@ public class QuestionDAO {
         }
     }
 
-   // Metoda 'userId' parametresi ekledik ve SQL sorgusunu veritabanınla (options_json) uyumlu hale getirdik
     public List<Map<String, Object>> getQuestionsByStudy(int studyId, int userId) {
         List<Map<String, Object>> questions = new ArrayList<>();
-        
-        // HATA BURADAYDI: q.options yerine q.options_json olarak düzeltildi
-        String sql = "SELECT q.question_id, q.question_text, q.correct_answer, q.options_json, q.difficulty_level, " +
+
+        String sql = "SELECT q.question_id, q.question_text, q.correct_answer, q.options_json, q.difficulty_level, q.question_type, " +
                      "(SELECT COUNT(*) FROM User_Answers ua WHERE ua.question_id = q.question_id AND ua.user_id = ?) as is_answered " +
                      "FROM Questions q WHERE q.study_id = ?";
 
@@ -54,12 +54,9 @@ public class QuestionDAO {
                     question.put("questionId", rs.getInt("question_id"));
                     question.put("text", rs.getString("question_text"));
                     question.put("answer", rs.getString("correct_answer"));
-                    
-                    // HATA BURADAYDI: rs.getString("options") yerine "options_json" yapıldı
-                    question.put("options", rs.getString("options_json")); 
-                    
+                    question.put("options", rs.getString("options_json"));
                     question.put("level", rs.getString("difficulty_level"));
-                    // Flutter'ın anlaması için true/false olarak isAnswered ekliyoruz
+                    question.put("questionType", rs.getString("question_type"));
                     question.put("isAnswered", rs.getInt("is_answered") > 0);
                     questions.add(question);
                 }
@@ -68,4 +65,5 @@ public class QuestionDAO {
             e.printStackTrace();
         }
         return questions;
-    }}
+    }
+}

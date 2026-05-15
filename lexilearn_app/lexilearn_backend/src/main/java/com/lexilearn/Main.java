@@ -56,10 +56,6 @@ public class Main {
         // AUTHENTICATION & PROFILE
         // ==========================================
 
-        // ==========================================
-        // AUTHENTICATION & PROFILE
-        // ==========================================
-
         post("/register", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
@@ -114,6 +110,7 @@ public class Main {
             }
             return responseJson.toString();
         });
+
         // ==========================================
         // STUDENT STUDY ENDPOINTS
         // ==========================================
@@ -151,16 +148,12 @@ public class Main {
             }
             return responseJson.toString();
         });
-        // Bir derse ait soruları getirir
-        // Main.java içindeki mevcut /questions endpoint'ini bununla değiştirin
+
         get("/questions", (req, res) -> {
             res.type("application/json");
             int studyId = Integer.parseInt(req.queryParams("studyId"));
-
-            // Kullanıcının ilerlemesini bulmak için userId'yi de alıyoruz
             String userIdParam = req.queryParams("userId");
             int userId = userIdParam != null ? Integer.parseInt(userIdParam) : 0;
-
             return gson.toJson(questionDAO.getQuestionsByStudy(studyId, userId));
         });
 
@@ -193,6 +186,7 @@ public class Main {
         // ==========================================
         // PROFESSOR & CONTENT MANAGEMENT
         // ==========================================
+
         post("/domain", (req, res) -> {
             String domainName = req.queryParams("domainName");
             boolean success = domainDAO.insertDomain(domainName);
@@ -201,7 +195,6 @@ public class Main {
             return result.toString();
         });
 
-        // Yeni Ders (Study) Ekleme
         post("/study", (req, res) -> {
             int domainId = Integer.parseInt(req.queryParams("domainId"));
             String title = req.queryParams("title");
@@ -212,14 +205,16 @@ public class Main {
             return result.toString();
         });
 
-        // Yeni Soru (Question) Ekleme
+        // ← GÜNCELLENEN KISIM: artık questionType da alıyor
         post("/question", (req, res) -> {
             int studyId = Integer.parseInt(req.queryParams("studyId"));
             String text = req.queryParams("text");
             String answer = req.queryParams("answer");
             String options = req.queryParams("options");
-            String level = req.queryParams("level");
-            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level);
+            String level = req.queryParams("level") != null ? req.queryParams("level") : "Beginner";
+            String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType") : "multiple_choice";
+
+            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType);
             JsonObject result = new JsonObject();
             result.addProperty("success", success);
             return result.toString();

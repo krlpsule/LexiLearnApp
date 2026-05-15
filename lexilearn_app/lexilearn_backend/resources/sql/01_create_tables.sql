@@ -28,6 +28,7 @@ CREATE TABLE Questions (
     correct_answer VARCHAR(255) NOT NULL,
     options_json TEXT NOT NULL,
     difficulty_level ENUM('Beginner', 'Intermediate', 'Advanced') NOT NULL,
+    question_type VARCHAR(20) NOT NULL DEFAULT 'multiple_choice',
     FOREIGN KEY (study_id) REFERENCES Studies(study_id) ON DELETE CASCADE
 );
 

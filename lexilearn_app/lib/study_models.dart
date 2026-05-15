@@ -58,7 +58,8 @@ class Question {
   final String correctAnswer;
   final List<String> options;
   final String difficultyLevel;
-  bool isAnswered; // YENİ EKLENEN KISIM
+  final String questionType; // 'multiple_choice', 'true_false', 'fill_in_blank'
+  bool isAnswered;
 
   Question({
     required this.questionId,
@@ -66,17 +67,28 @@ class Question {
     required this.correctAnswer,
     required this.options,
     required this.difficultyLevel,
-    this.isAnswered = false, // YENİ EKLENEN KISIM
+    this.questionType = 'multiple_choice',
+    this.isAnswered = false,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
+    List<String> parsedOptions = [];
+    if (json['options'] != null && json['options'].toString().isNotEmpty) {
+      try {
+        parsedOptions = List<String>.from(jsonDecode(json['options']));
+      } catch (_) {
+        parsedOptions = [];
+      }
+    }
+
     return Question(
       questionId: json['questionId'],
       questionText: json['text'],
       correctAnswer: json['answer'],
-      options: List<String>.from(jsonDecode(json['options'])),
-      difficultyLevel: json['level'],
-      isAnswered: json['isAnswered'] ?? false, // YENİ EKLENEN KISIM
+      options: parsedOptions,
+      difficultyLevel: json['level'] ?? '',
+      questionType: json['questionType'] ?? 'multiple_choice',
+      isAnswered: json['isAnswered'] ?? false,
     );
   }
 }
