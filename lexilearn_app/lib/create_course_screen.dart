@@ -13,11 +13,9 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
   final TextEditingController _courseNameController = TextEditingController();
   final TextEditingController _newDomainController = TextEditingController();
 
-  String? _selectedLevel;
   String? _selectedDomainId;
   List<dynamic> _domains = [];
 
-  final List<String> _levels = ['Beginner', 'Intermediate', 'Advanced'];
   final String baseUrl = 'http://10.0.2.2:8080';
 
   @override
@@ -26,7 +24,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
     _fetchDomains();
   }
 
-  // Kategorileri backend'den çekiyor
   Future<void> _fetchDomains() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/domains'));
@@ -36,11 +33,10 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching domains: $e');
+      debugPrint('Error fetching domains: $e');
     }
   }
 
-  // Yeni kategori oluşturuyor (backend'e form data olarak POST atıyor)
   Future<void> _createDomain() async {
     if (_newDomainController.text.isEmpty) return;
 
@@ -52,7 +48,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _newDomainController.clear();
-        await _fetchDomains(); // Listeyi güncelle
+        await _fetchDomains();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -63,15 +59,12 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
         }
       }
     } catch (e) {
-      print('Error creating domain: $e');
+      debugPrint('Error creating domain: $e');
     }
   }
 
-  // Kursu backend'e kaydediyor (form data olarak)
   Future<void> _saveCourse() async {
-    if (_courseNameController.text.isEmpty ||
-        _selectedLevel == null ||
-        _selectedDomainId == null) {
+    if (_courseNameController.text.isEmpty || _selectedDomainId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill all fields and select a category'),
@@ -86,7 +79,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
         Uri.parse('$baseUrl/study'),
         body: {
           'title': _courseNameController.text.trim(),
-          'level': _selectedLevel,
           'domainId': _selectedDomainId,
         },
       );
@@ -99,11 +91,8 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
               backgroundColor: Colors.green,
             ),
           );
-
-          // SİYAH EKRAN ÇÖZÜMÜ: Sayfayı kapatmak yerine kutucukları temizle
           setState(() {
             _courseNameController.clear();
-            _selectedLevel = null;
             _selectedDomainId = null;
           });
         }
@@ -164,7 +153,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
               hint: const Text('Select a category'),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _domains.map<DropdownMenuItem<String>>((domain) {
-                // Null hatasını engellemek için farklı isimlendirmeleri (domainName, domain_name) kontrol ediyoruz
                 String id =
                     (domain['domainId'] ??
                             domain['domain_id'] ??
@@ -177,7 +165,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                             domain['name'] ??
                             'Unknown Category')
                         .toString();
-
                 return DropdownMenuItem<String>(
                   value: id.isNotEmpty ? id : null,
                   child: Text(name),
@@ -191,7 +178,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ── Yeni Kategori Ekleme Alanı ──
+            // ── Yeni Kategori Ekleme ──
             const Text(
               'Or Create New Category',
               style: TextStyle(fontSize: 14, color: Colors.grey),
@@ -214,26 +201,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                   child: const Text('Add'),
                 ),
               ],
-            ),
-            const SizedBox(height: 24),
-
-            // ── Seviye Seçimi ──
-            const Text(
-              'Difficulty Level',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            ..._levels.map(
-              (level) => RadioListTile<String>(
-                title: Text(level),
-                value: level,
-                groupValue: _selectedLevel,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedLevel = value;
-                  });
-                },
-              ),
             ),
             const SizedBox(height: 32),
 
