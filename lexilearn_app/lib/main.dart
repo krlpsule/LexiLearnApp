@@ -83,9 +83,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getBody() {
     if (widget.userRole == "Professor") {
       if (_selectedIndex == 1) {
-        _selectedIndex = 0; 
+        _selectedIndex = 0;
       }
-      
+
       switch (_selectedIndex) {
         case 0:
           return DashboardScreen(
@@ -106,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
           );
       }
     }
-    
+
     switch (_selectedIndex) {
       case 0:
         return DashboardScreen(

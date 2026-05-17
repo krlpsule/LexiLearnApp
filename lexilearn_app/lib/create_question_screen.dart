@@ -11,8 +11,6 @@ class CreateQuestionScreen extends StatefulWidget {
 
 class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   final TextEditingController _questionController = TextEditingController();
-
-  // Multiple Choice için
   final List<TextEditingController> _answerControllers = [
     TextEditingController(),
     TextEditingController(),
@@ -21,20 +19,24 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   ];
   int? _correctAnswerIndex;
 
-  // True/False için
-  String? _trueFalseAnswer; // 'true' veya 'false'
-
-  // Fill in the Blank için
-  final TextEditingController _fillAnswerController = TextEditingController();
-
-  // Seçilen soru tipi
-  String _questionType = 'multiple_choice';
-
+  String? _selectedLevel;
   String? _selectedDomainId;
   String? _selectedStudyId;
+  String _selectedQuestionType =
+      'multiple_choice'; // YENİ: Soru tipi varsayılan olarak çoktan seçmeli
+
   List<dynamic> _domains = [];
   List<dynamic> _studies = [];
   List<dynamic> _filteredStudies = [];
+
+  final List<String> _levels = ['Beginner', 'Intermediate', 'Advanced'];
+
+  // YENİ: Soru tipleri listesi
+  final List<Map<String, String>> _questionTypes = [
+    {'value': 'multiple_choice', 'label': 'Multiple Choice'},
+    {'value': 'true_false', 'label': 'True / False'},
+    {'value': 'fill_in_blank', 'label': 'Fill in the Blank'},
+  ];
 
   final String baseUrl = 'http://10.0.2.2:8080';
 
@@ -48,7 +50,6 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   @override
   void dispose() {
     _questionController.dispose();
-    _fillAnswerController.dispose();
     for (var controller in _answerControllers) {
       controller.dispose();
     }
@@ -59,6 +60,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     try {
       final response = await http.get(Uri.parse('$baseUrl/domains'));
       if (!mounted) return;
+
       if (response.statusCode == 200) {
         setState(() {
           _domains = jsonDecode(response.body);
@@ -73,6 +75,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     try {
       final response = await http.get(Uri.parse('$baseUrl/studies'));
       if (!mounted) return;
+
       if (response.statusCode == 200) {
         setState(() {
           _studies = jsonDecode(response.body);
@@ -89,8 +92,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       _filteredStudies = [];
     } else {
       _filteredStudies = _studies.where((s) {
-        String sDomainId =
-            (s['domainId'] ?? s['domain_id'] ?? '').toString();
+        String sDomainId = (s['domainId'] ?? s['domain_id'] ?? '').toString();
         return sDomainId == _selectedDomainId;
       }).toList();
     }
@@ -122,104 +124,93 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('There must be at least 2 options.'),
-        ),
+        const SnackBar(content: Text('There must be at least 2 options.')),
       );
     }
   }
 
   Future<void> _saveQuestion() async {
-    // ── Ortak validasyonlar ──
-    if (_selectedDomainId == null) {
+    if (_selectedDomainId == null || _selectedStudyId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a Domain first.')),
+        const SnackBar(content: Text('Please select Category and Study.')),
       );
       return;
     }
-    if (_selectedStudyId == null || _questionController.text.trim().isEmpty) {
+    if (_questionController.text.trim().isEmpty || _selectedLevel == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please select a Study and enter the Question Text.',
-          ),
+          content: Text('Please enter Question Text and Level.'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    String answer = '';
-    String options = '[]';
+    String correctAnswer = "";
+    List<String> options = [];
 
-    // ── Soru tipine göre validasyon ve veri hazırlama ──
-    if (_questionType == 'multiple_choice') {
+    // YENİ: Seçilen soru tipine göre veri paketleme mantığı
+    if (_selectedQuestionType == 'multiple_choice') {
       if (_correctAnswerIndex == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Please mark the correct answer by tapping a circle.',
-            ),
+            content: Text('Please mark the correct answer.'),
             backgroundColor: Colors.orange,
           ),
         );
         return;
       }
-
-      List<String> optionList = [];
       for (var controller in _answerControllers) {
         if (controller.text.trim().isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text(
-                'Please fill in all answer fields or remove empty options.',
-              ),
+              content: Text('Please fill all option fields.'),
               backgroundColor: Colors.orange,
             ),
           );
           return;
         }
-        optionList.add(controller.text.trim());
+        options.add(controller.text.trim());
       }
-
-      answer = optionList[_correctAnswerIndex!];
-      options = jsonEncode(optionList);
-    } else if (_questionType == 'true_false') {
-      if (_trueFalseAnswer == null) {
+      correctAnswer = options[_correctAnswerIndex!];
+    } else if (_selectedQuestionType == 'true_false') {
+      if (_correctAnswerIndex == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please select True or False as the correct answer.'),
+            content: Text('Please select True or False.'),
             backgroundColor: Colors.orange,
           ),
         );
         return;
       }
-      answer = _trueFalseAnswer!;
-      options = jsonEncode(['true', 'false']);
-    } else if (_questionType == 'fill_in_blank') {
-      if (_fillAnswerController.text.trim().isEmpty) {
+      options = ["True", "False"];
+      correctAnswer = options[_correctAnswerIndex!];
+    } else if (_selectedQuestionType == 'fill_in_blank') {
+      if (_answerControllers[0].text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please enter the correct answer for the blank.'),
+            content: Text('Please enter the correct answer word/phrase.'),
             backgroundColor: Colors.orange,
           ),
         );
         return;
       }
-      answer = _fillAnswerController.text.trim();
-      options = jsonEncode([]);
+      correctAnswer = _answerControllers[0].text.trim();
+      options =
+          []; // Boşluk doldurmada şık olmaz, o yüzden boş liste gönderiyoruz.
     }
 
-    // ── Backend'e gönder ──
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/question'),
         body: {
           'studyId': _selectedStudyId!,
           'text': _questionController.text.trim(),
-          'answer': answer,
-          'options': options,
-          'questionType': _questionType, // ← YENİ ALAN
+          'answer': correctAnswer,
+          'options': jsonEncode(options),
+          'level': _selectedLevel!,
+          'questionType':
+              _selectedQuestionType, // YENİ: Soru tipi backend'e gidiyor!
         },
       );
 
@@ -256,211 +247,136 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
 
   void _resetForm() {
     _questionController.clear();
-    _fillAnswerController.clear();
     for (var controller in _answerControllers) {
       controller.clear();
     }
     setState(() {
       _correctAnswerIndex = null;
-      _trueFalseAnswer = null;
+      _selectedLevel = null;
       _selectedStudyId = null;
-      _questionType = 'multiple_choice';
+      // _selectedQuestionType varsayılan olarak kalsın, hoca peş peşe aynı tip soru girebilir
     });
   }
 
-  // ──────────────────────────────────────────────────
-  // True/False formu
-  // ──────────────────────────────────────────────────
-  Widget _buildTrueFalseForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Correct Answer',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _trueFalseAnswer = 'true'),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  decoration: BoxDecoration(
-                    color: _trueFalseAnswer == 'true'
-                        ? Colors.green
-                        : Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.green.shade400,
-                      width: 2,
+  // YENİ: Soru Tipine göre Arayüzü Çizen Akıllı Fonksiyon
+  Widget _buildAnswerSection() {
+    if (_selectedQuestionType == 'multiple_choice') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Options',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Click the circle next to the correct answer',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(_answerControllers.length, (index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Radio<int>(
+                    value: index,
+                    groupValue: _correctAnswerIndex,
+                    onChanged: (value) =>
+                        setState(() => _correctAnswerIndex = value),
+                    activeColor: Colors.green,
+                    fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                      if (_correctAnswerIndex == index) return Colors.green;
+                      return Colors.grey.shade400;
+                    }),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _answerControllers[index],
+                      decoration: InputDecoration(
+                        hintText: 'Option ${index + 1}',
+                        border: const OutlineInputBorder(),
+                      ),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: _trueFalseAnswer == 'true'
-                            ? Colors.white
-                            : Colors.green.shade700,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'True',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _trueFalseAnswer == 'true'
-                              ? Colors.white
-                              : Colors.green.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _trueFalseAnswer = 'false'),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  decoration: BoxDecoration(
-                    color: _trueFalseAnswer == 'false'
-                        ? Colors.red
-                        : Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.red.shade400,
-                      width: 2,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.remove_circle_outline,
+                      color: Colors.red,
                     ),
+                    onPressed: () => _removeAnswer(index),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.cancel,
-                        color: _trueFalseAnswer == 'false'
-                            ? Colors.white
-                            : Colors.red.shade700,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'False',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: _trueFalseAnswer == 'false'
-                              ? Colors.white
-                              : Colors.red.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // ──────────────────────────────────────────────────
-  // Fill in the Blank formu
-  // ──────────────────────────────────────────────────
-  Widget _buildFillInBlankForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Correct Answer (what goes in the blank)',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _fillAnswerController,
-          decoration: InputDecoration(
-            hintText: 'e.g. "Paris" or "photosynthesis"',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+            );
+          }),
+          TextButton.icon(
+            onPressed: _addAnswer,
+            icon: const Icon(Icons.add),
+            label: const Text('Add Another Option'),
+          ),
+        ],
+      );
+    } else if (_selectedQuestionType == 'true_false') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Select the Correct Answer:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Radio<int>(
+                value: 0,
+                groupValue: _correctAnswerIndex,
+                onChanged: (value) =>
+                    setState(() => _correctAnswerIndex = value),
+                activeColor: Colors.green,
+              ),
+              const Text('True', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 24),
+              Radio<int>(
+                value: 1,
+                groupValue: _correctAnswerIndex,
+                onChanged: (value) =>
+                    setState(() => _correctAnswerIndex = value),
+                activeColor: Colors.green,
+              ),
+              const Text('False', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ],
+      );
+    } else if (_selectedQuestionType == 'fill_in_blank') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Correct Answer (Word/Phrase)',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Students will need to type this exact word to pass.',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller:
+                _answerControllers[0], // Sadece ilk controller'ı kullanıyoruz
+            decoration: const InputDecoration(
+              hintText: 'e.g. Mitochondria',
+              border: OutlineInputBorder(),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Tip: Use ___ in your question text to show where the blank is.\nExample: "The capital of France is ___."',
-          style: TextStyle(fontSize: 13, color: Colors.grey),
-        ),
-      ],
-    );
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 
-  // ──────────────────────────────────────────────────
-  // Multiple Choice formu (mevcut)
-  // ──────────────────────────────────────────────────
-  Widget _buildMultipleChoiceForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Answers',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        ...List.generate(_answerControllers.length, (index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                Radio<int>(
-                  value: index,
-                  groupValue: _correctAnswerIndex,
-                  onChanged: (value) =>
-                      setState(() => _correctAnswerIndex = value),
-                  activeColor: Colors.green,
-                  fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-                    if (_correctAnswerIndex == index) return Colors.green;
-                    return Colors.grey.shade400;
-                  }),
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _answerControllers[index],
-                    decoration: InputDecoration(
-                      hintText: 'Answer ${index + 1}',
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.remove_circle_outline,
-                    color: Colors.red,
-                  ),
-                  onPressed: () => _removeAnswer(index),
-                ),
-              ],
-            ),
-          );
-        }),
-        TextButton.icon(
-          onPressed: _addAnswer,
-          icon: const Icon(Icons.add),
-          label: const Text('Add Another Option'),
-        ),
-      ],
-    );
-  }
-
-  // ──────────────────────────────────────────────────
-  // Ana build
-  // ──────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -473,7 +389,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Domain seçimi ──
+            // ── DOMAIN ──
             const Text(
               'Select Category (Domain)',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -501,16 +417,14 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                   child: Text(name),
                 );
               }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDomainId = value;
-                  _filterStudies();
-                });
-              },
+              onChanged: (value) => setState(() {
+                _selectedDomainId = value;
+                _filterStudies();
+              }),
             ),
             const SizedBox(height: 24),
 
-            // ── Study seçimi ──
+            // ── STUDY ──
             const Text(
               'Which Study to Add To?',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -525,8 +439,8 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               ),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
-                String id =
-                    (study['studyId'] ?? study['study_id'] ?? '').toString();
+                String id = (study['studyId'] ?? study['study_id'] ?? '')
+                    .toString();
                 String title =
                     (study['title'] ?? study['name'] ?? 'Unknown Study')
                         .toString();
@@ -541,60 +455,36 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ── Soru Tipi seçimi ──
+            // ── YENİ: SORU TİPİ SEÇİMİ ──
             const Text(
               'Question Type',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _questionType,
+              value: _selectedQuestionType,
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              items: const [
-                DropdownMenuItem(
-                  value: 'multiple_choice',
-                  child: Row(
-                    children: [
-                      Icon(Icons.list, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text('Multiple Choice'),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'true_false',
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_outline, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text('True / False'),
-                    ],
-                  ),
-                ),
-                DropdownMenuItem(
-                  value: 'fill_in_blank',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text('Fill in the Blank'),
-                    ],
-                  ),
-                ),
-              ],
+              items: _questionTypes.map((type) {
+                return DropdownMenuItem<String>(
+                  value: type['value'],
+                  child: Text(type['label']!),
+                );
+              }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _questionType = value!;
-                  // Tip değişince cevap seçimlerini sıfırla
-                  _correctAnswerIndex = null;
-                  _trueFalseAnswer = null;
-                  _fillAnswerController.clear();
+                  _selectedQuestionType = value!;
+                  _correctAnswerIndex =
+                      null; // Tip değişince seçili cevabı sıfırla
                 });
               },
             ),
             const SizedBox(height: 24),
 
-            // ── Soru metni ──
+            // ── SORU METNİ ──
             const Text(
               'Question',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -603,23 +493,35 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
             TextField(
               controller: _questionController,
               maxLines: 3,
-              decoration: InputDecoration(
-                hintText: _questionType == 'fill_in_blank'
-                    ? 'e.g. "The capital of France is ___."'
-                    : 'Enter question',
-                border: const OutlineInputBorder(),
+              decoration: const InputDecoration(
+                hintText: 'Enter question text',
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
 
-            // ── Soru tipine göre form ──
-            if (_questionType == 'multiple_choice') _buildMultipleChoiceForm(),
-            if (_questionType == 'true_false') _buildTrueFalseForm(),
-            if (_questionType == 'fill_in_blank') _buildFillInBlankForm(),
+            // ── ZORLUK SEVİYESİ ──
+            const Text(
+              'Difficulty Level',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedLevel,
+              items: _levels
+                  .map((l) => DropdownMenuItem(value: l, child: Text(l)))
+                  .toList(),
+              onChanged: (val) => setState(() => _selectedLevel = val),
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              hint: const Text('Select Level'),
+            ),
+            const SizedBox(height: 24),
 
+            // ── AKILLI CEVAP ALANI (Tipe göre değişir) ──
+            _buildAnswerSection(),
             const SizedBox(height: 32),
 
-            // ── Kaydet butonu ──
+            // ── KAYDET BUTONU ──
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -634,10 +536,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                 onPressed: _saveQuestion,
                 child: const Text(
                   'Save Question',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

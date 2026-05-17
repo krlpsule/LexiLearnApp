@@ -157,6 +157,26 @@ public class Main {
             return gson.toJson(questionDAO.getQuestionsByStudy(studyId, userId));
         });
 
+        post("/question", (req, res) -> {
+            int studyId = Integer.parseInt(req.queryParams("studyId"));
+            String text = req.queryParams("text");
+            String answer = req.queryParams("answer");
+
+            String options = req.queryParams("options");
+            if (options == null || options.trim().isEmpty()) {
+                options = "[]";
+            }
+
+            String level = req.queryParams("level") != null ? req.queryParams("level") : "Beginner";
+            String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType")
+                    : "multiple_choice";
+
+            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
+        });
+
         post("/submit-answer", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
@@ -212,7 +232,8 @@ public class Main {
             String answer = req.queryParams("answer");
             String options = req.queryParams("options");
             String level = req.queryParams("level") != null ? req.queryParams("level") : "Beginner";
-            String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType") : "multiple_choice";
+            String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType")
+                    : "multiple_choice";
 
             boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType);
             JsonObject result = new JsonObject();
