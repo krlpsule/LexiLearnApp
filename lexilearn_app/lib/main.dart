@@ -7,6 +7,8 @@ import 'create_course_screen.dart';
 import 'create_question_screen.dart';
 import 'user_info_screen.dart';
 import 'login_screen.dart';
+import 'language_manager.dart';
+import 'language_slider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -48,35 +50,43 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('LexiLearn'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          ClickableUsername(
+    // Tüm ana iskeleti ValueListenableBuilder içine alıyoruz
+    return ValueListenableBuilder<String>(
+      valueListenable: LanguageManager.currentLang,
+      builder: (context, lang, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('LexiLearn'),
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            actions: [
+              // Language Slider'ı her sayfada üst menüye yerleştiriyoruz
+              const Center(child: LanguageSlider()),
+              const SizedBox(width: 8),
+              ClickableUsername(
+                userId: widget.userId,
+                username: widget.username,
+                userRole: widget.userRole,
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+          drawer: NavigationDrawer(
             userId: widget.userId,
             username: widget.username,
             userRole: widget.userRole,
+            selectedIndex: _selectedIndex,
+            onItemSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
           ),
-        ],
-      ),
-
-      drawer: NavigationDrawer(
-        userId: widget.userId,
-        username: widget.username,
-        userRole: widget.userRole,
-        selectedIndex: _selectedIndex,
-        onItemSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
-
-      body: _getBody(),
+          body: _getBody(),
+        );
+      }
     );
   }
 
@@ -85,7 +95,6 @@ class _MainScreenState extends State<MainScreen> {
       if (_selectedIndex == 1) {
         _selectedIndex = 0;
       }
-
       switch (_selectedIndex) {
         case 0:
           return DashboardScreen(
@@ -94,14 +103,14 @@ class _MainScreenState extends State<MainScreen> {
             userRole: widget.userRole,
           );
         case 2:
-          return CreateCourseScreen();
+          return const CreateCourseScreen();
         case 3:
-          return CreateQuestionScreen();
+          return const CreateQuestionScreen();
         default:
-          return const Center(
+          return Center(
             child: Text(
-              'Coming Soon',
-              style: TextStyle(fontSize: 24, color: Colors.grey),
+              LanguageManager.getText('coming_soon'),
+              style: const TextStyle(fontSize: 24, color: Colors.grey),
             ),
           );
       }
@@ -117,10 +126,10 @@ class _MainScreenState extends State<MainScreen> {
       case 1:
         return MyStudiesScreen(userId: widget.userId);
       default:
-        return const Center(
+        return Center(
           child: Text(
-            'Coming Soon',
-            style: TextStyle(fontSize: 24, color: Colors.grey),
+            LanguageManager.getText('coming_soon'),
+            style: const TextStyle(fontSize: 24, color: Colors.grey),
           ),
         );
     }
