@@ -42,6 +42,13 @@ class LanguageManager {
       'start_btn': 'Start',
       'study_start_success': 'Study started successfully!',
       'study_start_fail': 'Failed to start study.'
+
+      'dashboard': 'Dashboard',
+      'create_study': 'Create Study',
+      'create_question': 'Create Question',
+      'manage_questions': 'Manage My Questions',
+      'settings': 'Settings',
+      'logout': 'Logout',
     },
     'tr': {
       'login': 'Giriş Yap',
@@ -81,6 +88,13 @@ class LanguageManager {
       'start_btn': 'Başla',
       'study_start_success': 'Çalışma başarıyla başlatıldı!',
       'study_start_fail': 'Çalışma başlatılamadı.'
+
+      'dashboard': 'Kontrol Paneli',
+      'create_study': 'Çalışma Oluştur',
+      'create_question': 'Soru Oluştur',
+      'manage_questions': 'Sorularımı Yönet',
+      'settings': 'Ayarlar',
+      'logout': 'Çıkış Yap',
     }
   };
 
