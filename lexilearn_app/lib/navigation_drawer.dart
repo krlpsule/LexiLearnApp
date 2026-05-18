@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'manage_questions_screen.dart'; // YENİ: Yönetim sayfasını import ettik
 
 class NavigationDrawer extends StatelessWidget {
   final int userId;
@@ -51,7 +52,7 @@ class NavigationDrawer extends StatelessWidget {
             ),
           ),
 
-          // Menu Item 1: Dashboard 
+          // Menu Item 1: Dashboard
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
@@ -62,7 +63,7 @@ class NavigationDrawer extends StatelessWidget {
             },
           ),
 
-          // Menu Item 2: My Studies 
+          // Menu Item 2: My Studies (Sadece Öğrenci)
           if (userRole == "Student")
             ListTile(
               leading: const Icon(Icons.book),
@@ -74,7 +75,7 @@ class NavigationDrawer extends StatelessWidget {
               },
             ),
 
-          // Menu Item 3: Create Study 
+          // Menu Item 3: Create Study (Sadece Profesör)
           if (userRole == "Professor")
             ListTile(
               leading: const Icon(Icons.add_circle),
@@ -85,8 +86,8 @@ class NavigationDrawer extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
-            
-          // Menu Item 4: Create Question 
+
+          // Menu Item 4: Create Question (Sadece Profesör)
           if (userRole == "Professor")
             ListTile(
               leading: const Icon(Icons.quiz),
@@ -97,9 +98,30 @@ class NavigationDrawer extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
+
+          // YENİ - Menu Item: Manage Questions (Sadece Profesör)
+          if (userRole == "Professor")
+            ListTile(
+              leading: const Icon(Icons.edit_note, color: Colors.blue),
+              title: const Text(
+                'Manage My Questions',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onTap: () {
+                Navigator.pop(context); // Önce drawer'ı (yan menüyü) kapat
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    // Hocanın ID'sini yönetim ekranına gönderiyoruz
+                    builder: (context) => ManageQuestionsScreen(userId: userId),
+                  ),
+                );
+              },
+            ),
+
           const Divider(),
 
-          // Menu Item 5: Settings 
+          // Menu Item 5: Settings
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
@@ -108,7 +130,7 @@ class NavigationDrawer extends StatelessWidget {
             },
           ),
 
-          // Menu Item 6: Logout 
+          // Menu Item 6: Logout
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),

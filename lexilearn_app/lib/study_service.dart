@@ -118,4 +118,50 @@ class StudyService {
       return null;
     }
   }
+
+  // Hocanın sorularını getir
+  Future<List<Question>> getProfessorQuestions(int userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/professor/questions?userId=$userId'),
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.map((dynamic item) => Question.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load professor questions');
+    }
+  }
+
+  // Soruyu sil
+  Future<bool> deleteQuestion(int questionId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/question/delete?questionId=$questionId'),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['success'] ?? false;
+    }
+    return false;
+  }
+
+  // Soruyu güncelle
+  Future<bool> updateQuestion({
+    required int questionId,
+    required String text,
+    required String answer,
+    required List<String> options,
+    required String level,
+    required String questionType,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/question/update?questionId=$questionId&text=$text&answer=$answer&options=${jsonEncode(options)}&level=$level&questionType=$questionType',
+      ),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['success'] ?? false;
+    }
+    return false;
+  }
 }

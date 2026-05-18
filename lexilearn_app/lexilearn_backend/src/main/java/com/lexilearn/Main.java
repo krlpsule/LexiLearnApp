@@ -225,7 +225,6 @@ public class Main {
             return result.toString();
         });
 
-        // ← GÜNCELLENEN KISIM: artık questionType da alıyor
         post("/question", (req, res) -> {
             int studyId = Integer.parseInt(req.queryParams("studyId"));
             String text = req.queryParams("text");
@@ -244,6 +243,35 @@ public class Main {
         get("/professor/stats", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(studyDAO.getProfessorStatistics(userId));
+        });
+        // get questions by professor
+        get("/professor/questions", (req, res) -> {
+            int userId = Integer.parseInt(req.queryParams("userId"));
+            return gson.toJson(questionDAO.getQuestionsByProfessor(userId));
+        });
+
+        // update question
+        post("/question/update", (req, res) -> {
+            int questionId = Integer.parseInt(req.queryParams("questionId"));
+            String text = req.queryParams("text");
+            String answer = req.queryParams("answer");
+            String options = req.queryParams("options");
+            String level = req.queryParams("level");
+            String questionType = req.queryParams("questionType");
+
+            boolean success = questionDAO.updateQuestion(questionId, text, answer, options, level, questionType);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
+        });
+
+        // delete question
+        post("/question/delete", (req, res) -> {
+            int questionId = Integer.parseInt(req.queryParams("questionId"));
+            boolean success = questionDAO.deleteQuestion(questionId);
+            JsonObject result = new JsonObject();
+            result.addProperty("success", success);
+            return result.toString();
         });
 
         get("/domains", (req, res) -> gson.toJson(domainDAO.getAllDomains()));
