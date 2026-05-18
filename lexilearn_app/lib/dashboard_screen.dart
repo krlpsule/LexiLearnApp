@@ -55,101 +55,105 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  @override
+  
+@override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return SingleChildScrollView(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.school, size: 80, color: Colors.blue),
-              const SizedBox(height: 20),
-              Text(
-                'Welcome back, ${widget.username}!',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Role: ${widget.userRole}',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
+    // ADDED: ValueListenableBuilder watches for language changes
+    return ValueListenableBuilder<String>(
+      valueListenable: LanguageManager.currentLang,
+      builder: (context, lang, child) {
+        return SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.school, size: 80, color: Colors.blue),
+                  const SizedBox(height: 20),
+                  Text(
+                    // CHANGED: Using LanguageManager for translation
+                    '${LanguageManager.getText('welcome_back')}, ${widget.username}!',
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    // CHANGED
+                    '${LanguageManager.getText('role')}: ${LanguageManager.getText(widget.userRole.toLowerCase())}',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 40),
 
-              // PROFESSOR DASHBOARD VIEW
-              if (widget.userRole == 'Professor') ...[
-                Text(
-                  'You have created ${professorStats.length} quiz(zes).',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueAccent),
-                ),
-                const SizedBox(height: 20),
-                if (professorStats.isEmpty)
-                  const Text("You haven't created any studies yet.", style: TextStyle(fontSize: 16))
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(), // allow SingleChildScrollView to handle scrolling
-                    itemCount: professorStats.length,
-                    itemBuilder: (context, index) {
-                      final stat = professorStats[index];
-                      return Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${stat['title']}',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  if (widget.userRole == 'Professor') ...[
+                    Text(
+                      // CHANGED
+                      '${LanguageManager.getText('quizzes_created_part1')} ${professorStats.length} ${LanguageManager.getText('quizzes_created_part2')}',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(height: 20),
+                    if (professorStats.isEmpty)
+                      Text(LanguageManager.getText('no_studies_created'), style: const TextStyle(fontSize: 16))
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: professorStats.length,
+                        itemBuilder: (context, index) {
+                          final stat = professorStats[index];
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${stat['title']}',
+                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text('👥 ${stat['studentCount']} ${LanguageManager.getText('students_took_quiz')}', style: const TextStyle(fontSize: 16)),
+                                  Text('📈 ${LanguageManager.getText('avg_success_rate')} ${stat['avgSuccess'].toStringAsFixed(1)}%', style: const TextStyle(fontSize: 16)),
+                                  const SizedBox(height: 15),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(builder: (context) => const CreateQuestionScreen()), 
+                                        );
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                        _fetchProfessorStats();
+                                      },
+                                      icon: const Icon(Icons.add),
+                                      label: Text(LanguageManager.getText('add_question_btn')),
+                                    ),
+                                  )
+                                ],
                               ),
-                              const SizedBox(height: 10),
-                              Text('👥 ${stat['studentCount']} student(s) took your quiz.', style: const TextStyle(fontSize: 16)),
-                              Text('📈 Average success rate: ${stat['avgSuccess'].toStringAsFixed(1)}%', style: const TextStyle(fontSize: 16)),
-                              const SizedBox(height: 15),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () async {
-                                    // 1. Await the navigation to the create screen
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const CreateQuestionScreen()), 
-                                    );
-                                    // 2. This code runs ONLY after the user hits 'back' from the CreateQuestionScreen
-                                    setState(() {
-                                      isLoading = true;
-                                    });
-                                    _fetchProfessorStats(); // Fetch fresh data from the database
-                                  },
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Wanna add question to that quiz?'),
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  )
-              ] 
-              // STUDENT DASHBOARD VIEW
-              else ...[
-                const Text(
-                  'Student statistics coming soon...',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ],
-            ],
+                            ),
+                          );
+                        },
+                      )
+                  ] else ...[
+                    Text(
+                      LanguageManager.getText('student_stats_coming'),
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
-}
