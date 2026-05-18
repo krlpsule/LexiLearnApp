@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'language_manager.dart';
 
 class CreateQuestionScreen extends StatefulWidget {
   const CreateQuestionScreen({super.key});
@@ -258,211 +259,178 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
     });
   }
 
-  // YENİ: Soru Tipine göre Arayüzü Çizen Akıllı Fonksiyon
   Widget _buildAnswerSection() {
-    if (_selectedQuestionType == 'multiple_choice') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Options',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Click the circle next to the correct answer',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 12),
-          ...List.generate(_answerControllers.length, (index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: [
-                  Radio<int>(
-                    value: index,
-                    groupValue: _correctAnswerIndex,
-                    onChanged: (value) =>
-                        setState(() => _correctAnswerIndex = value),
-                    activeColor: Colors.green,
-                    fillColor: WidgetStateProperty.resolveWith<Color>((states) {
-                      if (_correctAnswerIndex == index) return Colors.green;
-                      return Colors.grey.shade400;
-                    }),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _answerControllers[index],
-                      decoration: InputDecoration(
-                        hintText: 'Option ${index + 1}',
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.remove_circle_outline,
-                      color: Colors.red,
-                    ),
-                    onPressed: () => _removeAnswer(index),
-                  ),
-                ],
-              ),
-            );
-          }),
-          TextButton.icon(
-            onPressed: _addAnswer,
-            icon: const Icon(Icons.add),
-            label: const Text('Add Another Option'),
-          ),
-        ],
-      );
-    } else if (_selectedQuestionType == 'true_false') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Select the Correct Answer:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Radio<int>(
-                value: 0,
-                groupValue: _correctAnswerIndex,
-                onChanged: (value) =>
-                    setState(() => _correctAnswerIndex = value),
-                activeColor: Colors.green,
-              ),
-              const Text('True', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 24),
-              Radio<int>(
-                value: 1,
-                groupValue: _correctAnswerIndex,
-                onChanged: (value) =>
-                    setState(() => _correctAnswerIndex = value),
-                activeColor: Colors.green,
-              ),
-              const Text('False', style: TextStyle(fontSize: 16)),
-            ],
-          ),
-        ],
-      );
-    } else if (_selectedQuestionType == 'fill_in_blank') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Correct Answer (Word/Phrase)',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Students will need to type this exact word to pass.',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller:
-                _answerControllers[0], // Sadece ilk controller'ı kullanıyoruz
-            decoration: const InputDecoration(
-              hintText: 'e.g. Mitochondria',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
-  }
+if (_selectedQuestionType == 'multiple_choice') {
+return Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+LanguageManager.getText('options'),
+style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 4),
+Text(
+LanguageManager.getText('click_circle_correct'),
+style: const TextStyle(fontSize: 12, color: Colors.grey),
+),
+const SizedBox(height: 12),
+...List.generate(_answerControllers.length, (index) {
+return Padding(
+padding: const EdgeInsets.only(bottom: 10),
+child: Row(
+children: [
+Radio(
+value: index,
+groupValue: _correctAnswerIndex,
+onChanged: (value) => setState(() => _correctAnswerIndex = value),
+activeColor: Colors.green,
+fillColor: WidgetStateProperty.resolveWith((states) {
+if (_correctAnswerIndex == index) return Colors.green;
+return Colors.grey.shade400;
+}),
+),
+Expanded(
+child: TextField(
+controller: _answerControllers[index],
+decoration: InputDecoration(
+hintText: '${LanguageManager.getText('option_prefix')} ${index + 1}',
+border: const OutlineInputBorder(),
+),
+),
+),
+IconButton(
+icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+onPressed: () => _removeAnswer(index),
+),
+],
+),
+);
+}),
+TextButton.icon(
+onPressed: _addAnswer,
+icon: const Icon(Icons.add),
+label: Text(LanguageManager.getText('add_another_option')),
+),
+],
+);
+} else if (_selectedQuestionType == 'true_false') {
+return Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+LanguageManager.getText('select_correct_answer'),
+style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 12),
+Row(
+children: [
+Radio(
+value: 0,
+groupValue: _correctAnswerIndex,
+onChanged: (value) => setState(() => _correctAnswerIndex = value),
+activeColor: Colors.green,
+),
+Text(LanguageManager.getText('true_option'), style: const TextStyle(fontSize: 16)),
+const SizedBox(width: 24),
+Radio(
+value: 1,
+groupValue: _correctAnswerIndex,
+onChanged: (value) => setState(() => _correctAnswerIndex = value),
+activeColor: Colors.green,
+),
+Text(LanguageManager.getText('false_option'), style: const TextStyle(fontSize: 16)),
+],
+),
+],
+);
+} else if (_selectedQuestionType == 'fill_in_blank') {
+return Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+LanguageManager.getText('correct_answer_word'),
+style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 8),
+Text(
+LanguageManager.getText('students_type_exact'),
+style: const TextStyle(fontSize: 12, color: Colors.grey),
+),
+const SizedBox(height: 12),
+TextField(
+controller: _answerControllers[0],
+decoration: const InputDecoration(
+hintText: '...',
+border: OutlineInputBorder(),
+),
+),
+],
+);
+}
+return const SizedBox.shrink();
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Question'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── DOMAIN ──
-            const Text(
-              'Select Category (Domain)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedDomainId,
-              hint: const Text('Select a Category'),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              items: _domains.map<DropdownMenuItem<String>>((domain) {
-                String id =
-                    (domain['domainId'] ??
-                            domain['domain_id'] ??
-                            domain['id'] ??
-                            '')
-                        .toString();
-                String name =
-                    (domain['domainName'] ??
-                            domain['domain_name'] ??
-                            domain['name'] ??
-                            'Unknown')
-                        .toString();
-                return DropdownMenuItem<String>(
-                  value: id.isNotEmpty ? id : null,
-                  child: Text(name),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() {
-                _selectedDomainId = value;
-                _filterStudies();
-              }),
-            ),
-            const SizedBox(height: 24),
+@override
+Widget build(BuildContext context) {
+return ValueListenableBuilder(
+valueListenable: LanguageManager.currentLang,
+builder: (context, lang, child) {
+return Scaffold(
+appBar: AppBar(
+title: Text(LanguageManager.getText('create_question_title')),
+backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+),
+body: SingleChildScrollView(
+padding: const EdgeInsets.all(16.0),
+child: Column(
+crossAxisAlignment: CrossAxisAlignment.start,
+children: [
+Text(
+LanguageManager.getText('select_category_domain'),
+style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 8),
+DropdownButtonFormField(
+value: _selectedDomainId,
+hint: Text(LanguageManager.getText('select_category_hint')),
+decoration: const InputDecoration(border: OutlineInputBorder()),
+items: _domains.map<DropdownMenuItem>((domain) {
+String id = (domain['domainId'] ?? domain['domain_id'] ?? domain['id'] ?? '').toString();
+String name = (domain['domainName'] ?? domain['domain_name'] ?? domain['name'] ?? 'Unknown').toString();
+return DropdownMenuItem(value: id.isNotEmpty ? id : null, child: Text(name));
+}).toList(),
+onChanged: (value) => setState(() {
+_selectedDomainId = value;
+_filterStudies();
+}),
+),
+const SizedBox(height: 24),
 
-            // ── STUDY ──
-            const Text(
-              'Which Study to Add To?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              LanguageManager.getText('which_study_add'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedStudyId,
               hint: Text(
                 _selectedDomainId == null
-                    ? 'First select a category above'
-                    : 'Select a Study',
+                    ? LanguageManager.getText('first_select_category')
+                    : LanguageManager.getText('select_study_hint'),
               ),
               decoration: const InputDecoration(border: OutlineInputBorder()),
               items: _filteredStudies.map<DropdownMenuItem<String>>((study) {
-                String id = (study['studyId'] ?? study['study_id'] ?? '')
-                    .toString();
-                String title =
-                    (study['title'] ?? study['name'] ?? 'Unknown Study')
-                        .toString();
-                return DropdownMenuItem<String>(
-                  value: id.isNotEmpty ? id : null,
-                  child: Text(title),
-                );
+                String id = (study['studyId'] ?? study['study_id'] ?? '').toString();
+                String title = (study['title'] ?? study['name'] ?? 'Unknown Study').toString();
+                return DropdownMenuItem<String>(value: id.isNotEmpty ? id : null, child: Text(title));
               }).toList(),
-              onChanged: _selectedDomainId == null
-                  ? null
-                  : (value) => setState(() => _selectedStudyId = value),
+              onChanged: _selectedDomainId == null ? null : (value) => setState(() => _selectedStudyId = value),
             ),
             const SizedBox(height: 24),
 
-            // ── YENİ: SORU TİPİ SEÇİMİ ──
-            const Text(
-              'Question Type',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
-              ),
+            Text(
+              LanguageManager.getText('question_type'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueAccent),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
@@ -471,57 +439,53 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
               items: _questionTypes.map((type) {
                 return DropdownMenuItem<String>(
                   value: type['value'],
-                  child: Text(type['label']!),
+                  // Dynamically translate the type name
+                  child: Text(LanguageManager.getText(type['value']!)), 
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedQuestionType = value!;
-                  _correctAnswerIndex =
-                      null; // Tip değişince seçili cevabı sıfırla
+                  _correctAnswerIndex = null;
                 });
               },
             ),
             const SizedBox(height: 24),
 
-            // ── SORU METNİ ──
-            const Text(
-              'Question',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              LanguageManager.getText('question_text_label'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _questionController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Enter question text',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: LanguageManager.getText('enter_question_text'),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
 
-            // ── ZORLUK SEVİYESİ ──
-            const Text(
-              'Difficulty Level',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              LanguageManager.getText('difficulty_level'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: _selectedLevel,
               items: _levels
-                  .map((l) => DropdownMenuItem(value: l, child: Text(l)))
+                  .map((l) => DropdownMenuItem(value: l, child: Text(LanguageManager.getText(l.toLowerCase()))))
                   .toList(),
               onChanged: (val) => setState(() => _selectedLevel = val),
               decoration: const InputDecoration(border: OutlineInputBorder()),
-              hint: const Text('Select Level'),
+              hint: Text(LanguageManager.getText('select_level')),
             ),
             const SizedBox(height: 24),
 
-            // ── AKILLI CEVAP ALANI (Tipe göre değişir) ──
             _buildAnswerSection(),
             const SizedBox(height: 32),
 
-            // ── KAYDET BUTONU ──
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -529,14 +493,12 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: _saveQuestion,
-                child: const Text(
-                  'Save Question',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  LanguageManager.getText('save_question'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -545,4 +507,4 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       ),
     );
   }
-}
+);
