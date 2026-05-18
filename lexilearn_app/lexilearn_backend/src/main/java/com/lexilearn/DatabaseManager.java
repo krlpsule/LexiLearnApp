@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class DatabaseManager {
     // Update these with your local MySQL credentials
-    private static final String URL = "jdbc:mysql://avnadmin:AVNS_gSWs219QI_R5gSyb8_F@mysql-22586bd6-lexilearnapp.a.aivencloud.com:12421/defaultdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    //
+// Append &useUnicode=true&characterEncoding=utf8mb4 to the URL
+    private static final String URL = "jdbc:mysql://avnadmin:AVNS_gSWs219QI_R5gSyb8_F@mysql-22586bd6-lexilearnapp.a.aivencloud.com:12421/defaultdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8mb4";    //
     private static final String USER = "avnadmin";
     private static final String PASSWORD = "AVNS_gSWs219QI_R5gSyb8_F";
 
