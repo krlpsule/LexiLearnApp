@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'study_service.dart';
 import 'study_models.dart';
-import 'study_quiz_screen.dart'; // Soru ekranı import edildi
+import 'study_quiz_screen.dart'; 
+import 'language_manager.dart';
 
 class MyStudiesScreen extends StatefulWidget {
   final int userId;
