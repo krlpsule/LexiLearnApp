@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'study_models.dart';
 import 'study_service.dart';
+import 'language_manager.dart';
 
 class StudyQuizScreen extends StatefulWidget {
   final int userId;
@@ -97,8 +98,8 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
       SnackBar(
         content: Text(
           isCorrect
-              ? 'Correct! 🎉'
-              : 'Incorrect. The right answer was: ${currentQuestion.correctAnswer}',
+              ? LanguageManager.getText('correct_exclamation')
+              : '${LanguageManager.getText('incorrect_answer')} ${currentQuestion.correctAnswer}',
         ),
         backgroundColor: isCorrect ? Colors.green : Colors.red,
         duration: const Duration(seconds: 2),
@@ -133,15 +134,15 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text('Study Complete! 🎓'),
-          content: Text('You have successfully finished ${widget.studyTitle}.'),
+          title: Text(LanguageManager.getText('study_complete')),
+          content: Text('${LanguageManager.getText('successfully_finished')} ${widget.studyTitle}.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context, true);
               },
-              child: const Text('Back to My Studies'),
+              child: Text(LanguageManager.getText('back_to_my_studies')),
             ),
           ],
         ),
@@ -240,55 +241,58 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
     );
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.studyTitle),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(6.0),
-          child: LinearProgressIndicator(
-            value: _currentProgress / 100,
-            backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-            minHeight: 6.0,
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _questions.isEmpty
-          ? const Center(child: Text("No questions added for this study yet."))
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Question ${_currentIndex + 1} of ${_questions.length}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _questions[_currentIndex].questionText,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    // Yeni Eklenen switch yapısını çağırıyoruz
-                    _buildQuestionUI(_questions[_currentIndex]),
-                  ],
-                ),
+    return ValueListenableBuilder<String>(
+      valueListenable: LanguageManager.currentLang,
+      builder: (context, lang, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.studyTitle),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(6.0),
+              child: LinearProgressIndicator(
+                value: _currentProgress / 100,
+                backgroundColor: Colors.grey[300],
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                minHeight: 6.0,
               ),
             ),
+          ),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _questions.isEmpty
+              ? Center(child: Text(LanguageManager.getText('no_questions_added')))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '${LanguageManager.getText('question_word')} ${_currentIndex + 1} ${LanguageManager.getText('of_word')} ${_questions.length}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _questions[_currentIndex].questionText,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        _buildQuestionUI(_questions[_currentIndex]),
+                      ],
+                    ),
+                  ),
+                ),
+        );
+      }
     );
   }
-}
