@@ -41,7 +41,7 @@ class LanguageManager {
       'complete': 'complete',
       'start_btn': 'Start',
       'study_start_success': 'Study started successfully!',
-      'study_start_fail': 'Failed to start study.'
+      'study_start_fail': 'Failed to start study.',
 
       'dashboard': 'Dashboard',
       'create_study': 'Create Study',
@@ -81,7 +81,7 @@ class LanguageManager {
       
       // Study Quiz Screen
       'correct_exclamation': 'Correct! 🎉',
-      'incorrect_answer': 'Incorrect. The right answer was: ',
+      'incorrect_answer': 'Incorrect answer. The right answer was: ',
       'study_complete': 'Study Complete! 🎓',
       'successfully_finished': 'You have successfully finished',
       'back_to_my_studies': 'Back to My Studies',
@@ -130,7 +130,7 @@ class LanguageManager {
       'complete': 'tamamlandı',
       'start_btn': 'Başla',
       'study_start_success': 'Çalışma başarıyla başlatıldı!',
-      'study_start_fail': 'Çalışma başlatılamadı.'
+      'study_start_fail': 'Çalışma başlatılamadı.',
 
       'dashboard': 'Kontrol Paneli',
       'create_study': 'Çalışma Oluştur',
@@ -170,7 +170,7 @@ class LanguageManager {
       
       // Study Quiz Screen
       'correct_exclamation': 'Doğru! 🎉',
-      'incorrect_answer': 'Yanlış. Doğru cevap: ',
+      'incorrect_answer': 'Cevabınız yanlış. Doğrusu: ',
       'study_complete': 'Çalışma Tamamlandı! 🎓',
       'successfully_finished': 'Başarıyla tamamladınız:',
       'back_to_my_studies': 'Çalışmalarıma Dön',
@@ -180,7 +180,7 @@ class LanguageManager {
       'no_questions_added': 'Bu çalışma için henüz soru eklenmedi.',
       'question_word': 'Soru',
       'of_word': '/',
-      'coming_soon': 'Yakında Gelecek',
+      'coming_soon': 'Çok Yakında Gelecek',
     }
   };
 
