@@ -8,7 +8,7 @@ class DashboardScreen extends StatefulWidget {
   final int userId; // Now requires userId to fetch custom data
   final String username;
   final String userRole;
-  
+
   const DashboardScreen({
     super.key,
     required this.userId,
@@ -31,16 +31,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (widget.userRole == 'Professor') {
       _fetchProfessorStats();
     } else {
-      setState(() { isLoading = false; });
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> _fetchProfessorStats() async {
     try {
       final response = await http.get(
-        Uri.parse('$backendUrl/professor/stats?userId=${widget.userId}')
+        Uri.parse('$backendUrl/professor/stats?userId=${widget.userId}'),
       );
-      
+
       if (response.statusCode == 200) {
         setState(() {
           professorStats = json.decode(response.body);
@@ -55,8 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  
-@override
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -78,7 +79,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     // CHANGED: Using LanguageManager for translation
                     '${LanguageManager.getText('welcome_back')}, ${widget.username}!',
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -92,11 +96,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       // CHANGED
                       '${LanguageManager.getText('quizzes_created_part1')} ${professorStats.length} ${LanguageManager.getText('quizzes_created_part2')}',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blueAccent,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     if (professorStats.isEmpty)
-                      Text(LanguageManager.getText('no_studies_created'), style: const TextStyle(fontSize: 16))
+                      Text(
+                        LanguageManager.getText('no_studies_created'),
+                        style: const TextStyle(fontSize: 16),
+                      )
                     else
                       ListView.builder(
                         shrinkWrap: true,
@@ -114,11 +125,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 children: [
                                   Text(
                                     '${stat['title']}',
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
-                                  Text('👥 ${stat['studentCount']} ${LanguageManager.getText('students_took_quiz')}', style: const TextStyle(fontSize: 16)),
-                                  Text('📈 ${LanguageManager.getText('avg_success_rate')} ${stat['avgSuccess'].toStringAsFixed(1)}%', style: const TextStyle(fontSize: 16)),
+                                  Text(
+                                    '👥 ${stat['studentCount']} ${LanguageManager.getText('students_took_quiz')}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  Text(
+                                    '📈 ${LanguageManager.getText('avg_success_rate')} ${stat['avgSuccess'].toStringAsFixed(1)}%',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
                                   const SizedBox(height: 15),
                                   SizedBox(
                                     width: double.infinity,
@@ -126,7 +146,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       onPressed: () async {
                                         await Navigator.push(
                                           context,
-                                          MaterialPageRoute(builder: (context) => const CreateQuestionScreen()), 
+                                          MaterialPageRoute(
+                                            // GÜNCELLENEN KISIM: userId parametresi eklendi! (Ve const kaldırıldı)
+                                            builder: (context) => CreateQuestionScreen(userId: widget.userId),
+                                          ),
                                         );
                                         setState(() {
                                           isLoading = true;
@@ -134,15 +157,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         _fetchProfessorStats();
                                       },
                                       icon: const Icon(Icons.add),
-                                      label: Text(LanguageManager.getText('add_question_btn')),
+                                      label: Text(
+                                        LanguageManager.getText(
+                                          'add_question_btn',
+                                        ),
+                                      ),
                                     ),
-                                  )
+                                  ),
                                 ],
                               ),
                             ),
                           );
                         },
-                      )
+                      ),
                   ] else ...[
                     Text(
                       LanguageManager.getText('student_stats_coming'),
@@ -154,6 +181,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
         );
-      }
+      },
     );
   }
+}

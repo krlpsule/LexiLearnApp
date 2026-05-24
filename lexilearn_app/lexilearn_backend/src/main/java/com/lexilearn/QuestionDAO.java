@@ -11,24 +11,27 @@ import java.util.Map;
 
 public class QuestionDAO {
 
-    public boolean insertQuestion(int studyId, String questionText, String correctAnswer, String optionsJson,
-            String difficultyLevel, String questionType) {
+    // GÜNCELLENEN METOT: Sona "int professorId" parametresi eklendi
+    public boolean insertQuestion(int studyId, String text, String answer, String options, String level,
+            String questionType, int professorId) {
 
-        String sql = "INSERT INTO Questions (study_id, question_text, correct_answer, options_json, difficulty_level, question_type) VALUES (?, ?, ?, ?, ?, ?)";
+        // SQL GÜNCELLENDİ: created_by kolonu ve sonuna ekstra bir "?" eklendi
+        String sql = "INSERT INTO Questions (study_id, question_text, correct_answer, options_json, difficulty_level, question_type, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, studyId);
-            pstmt.setString(2, questionText);
-            pstmt.setString(3, correctAnswer);
-            pstmt.setString(4, optionsJson);
-            pstmt.setString(5, difficultyLevel);
+            pstmt.setString(2, text);
+            pstmt.setString(3, answer);
+            pstmt.setString(4, options);
+            pstmt.setString(5, level);
             pstmt.setString(6, questionType);
 
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
+            // YENİ EKLENEN VERİ: Soruyu kaydeden hocanın ID'si veritabanına yazılıyor
+            pstmt.setInt(7, professorId);
 
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -70,14 +73,15 @@ public class QuestionDAO {
     }
 
     // Get Questions by Professor Method
+    // GÜNCELLENMİŞ METOT: Sadece hocanın kendi eklediği soruları getirir
     public List<Map<String, Object>> getQuestionsByProfessor(int professorId) {
         List<Map<String, Object>> questions = new ArrayList<>();
+        // SQL Değişti: Sadece q.created_by = ? şartı arıyoruz!
         String sql = "SELECT q.question_id, q.study_id, q.question_text, q.correct_answer, q.options_json, q.difficulty_level, q.question_type, s.title as study_title "
                 +
                 "FROM Questions q " +
                 "JOIN Studies s ON q.study_id = s.study_id " +
-                "JOIN Domains d ON s.domain_id = d.domain_id " +
-                "WHERE d.created_by = ?";
+                "WHERE q.created_by = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {

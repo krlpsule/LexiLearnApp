@@ -92,6 +92,21 @@ class LanguageManager {
       'question_word': 'Question',
       'of_word': 'of',
       'coming_soon': 'Coming Soon',
+       //Manage Questions Screen
+       'manage_questions_nav': 'Manage My Questions',
+'no_questions_found': 'You haven\'t added any questions yet.',
+'level_label': 'Level',
+'type_label': 'Type',
+'delete_question_title': 'Delete Question?',
+'delete_question_confirm': 'Are you sure you want to permanently delete this question?',
+'cancel': 'Cancel',
+'delete': 'Delete',
+'edit_question_title': 'Edit Question',
+'question_text_label': 'Question Text',
+'correct_answer_label': 'Correct Answer',
+'save_changes_btn': 'Save Changes',
+'question_deleted_success': 'Question deleted successfully',
+'question_updated_success': 'Question updated successfully! 🎉',
     },
     'tr': {
       'login': 'Giriş Yap',
@@ -181,6 +196,21 @@ class LanguageManager {
       'question_word': 'Soru',
       'of_word': '/',
       'coming_soon': 'Çok Yakında Gelecek',
+        //Manage Questions Screen
+        'manage_questions_nav': 'Sorularımı Yönet',
+'no_questions_found': 'Henüz hiç soru eklemediniz.',
+'level_label': 'Seviye',
+'type_label': 'Tür',
+'delete_question_title': 'Soruyu Sil?',
+'delete_question_confirm': 'Bu soruyu kalıcı olarak silmek istediğinize emin misiniz?',
+'cancel': 'İptal',
+'delete': 'Sil',
+'edit_question_title': 'Soruyu Düzenle',
+'question_text_label': 'Soru Metni',
+'correct_answer_label': 'Doğru Cevap',
+'save_changes_btn': 'Değişiklikleri Kaydet',
+'question_deleted_success': 'Soru başarıyla silindi',
+'question_updated_success': 'Soru başarıyla güncellendi! 🎉',
     }
   };
 

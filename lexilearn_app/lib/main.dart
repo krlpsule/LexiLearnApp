@@ -50,7 +50,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
- @override
+  @override
   Widget build(BuildContext context) {
     // Tüm ana iskeleti ValueListenableBuilder içine alıyoruz
     return ValueListenableBuilder<String>(
@@ -86,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           body: _getBody(),
         );
-      }
+      },
     );
   }
 
@@ -105,7 +105,8 @@ class _MainScreenState extends State<MainScreen> {
         case 2:
           return const CreateCourseScreen();
         case 3:
-          return const CreateQuestionScreen();
+          // GÜNCELLENDİ: Artık userId bilgisini Soru Oluşturma sayfasına iletiyoruz
+          return CreateQuestionScreen(userId: widget.userId);
         default:
           return Center(
             child: Text(

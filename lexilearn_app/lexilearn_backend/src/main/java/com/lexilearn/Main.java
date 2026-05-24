@@ -14,10 +14,10 @@ public class Main {
     private static QuestionDAO questionDAO;
 
     public static void main(String[] args) {
-        System.out.println("🚀🚀🚀 LEXILEARN BACKEND CALISIYOR 🚀🚀🚀");
+        System.out.println("🚀🚀🚀 LEXILEARN BACKEND IS RUNNING 🚀🚀🚀");
         port(8080);
 
-        // 1. CORS Ayarları
+        // 1. CORS Settings
         options("/*", (req, res) -> {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -31,22 +31,22 @@ public class Main {
         });
 
         before((req, res) -> {
-            System.out.println("GELEN İSTEK: " + req.requestMethod() + " " + req.pathInfo());
+            System.out.println("INCOMING REQUEST: " + req.requestMethod() + " " + req.pathInfo());
             res.header("Access-Control-Allow-Origin", "*");
             if (!req.requestMethod().equals("OPTIONS")) {
                 res.type("application/json");
             }
         });
 
-        // 2. DAO Başlatma
+        // 2. Initialize DAOs
         try {
             userDAO = new UserDAO();
             domainDAO = new DomainDAO();
             studyDAO = new StudyDAO();
             questionDAO = new QuestionDAO();
-            System.out.println("✅ Veritabanı bağlantıları BAŞARILI!");
+            System.out.println("✅ Database connections SUCCESSFUL!");
         } catch (Exception e) {
-            System.out.println("🚨 Veritabanı başlatılırken hata oluştu!");
+            System.out.println("🚨 Error occurred while initializing database!");
             e.printStackTrace();
         }
 
@@ -157,26 +157,6 @@ public class Main {
             return gson.toJson(questionDAO.getQuestionsByStudy(studyId, userId));
         });
 
-        post("/question", (req, res) -> {
-            int studyId = Integer.parseInt(req.queryParams("studyId"));
-            String text = req.queryParams("text");
-            String answer = req.queryParams("answer");
-
-            String options = req.queryParams("options");
-            if (options == null || options.trim().isEmpty()) {
-                options = "[]";
-            }
-
-            String level = req.queryParams("level") != null ? req.queryParams("level") : "Beginner";
-            String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType")
-                    : "multiple_choice";
-
-            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType);
-            JsonObject result = new JsonObject();
-            result.addProperty("success", success);
-            return result.toString();
-        });
-
         post("/submit-answer", (req, res) -> {
             JsonObject responseJson = new JsonObject();
             try {
@@ -225,32 +205,44 @@ public class Main {
             return result.toString();
         });
 
+        // Add a new question with professor's ID
         post("/question", (req, res) -> {
             int studyId = Integer.parseInt(req.queryParams("studyId"));
             String text = req.queryParams("text");
             String answer = req.queryParams("answer");
             String options = req.queryParams("options");
+
+            if (options == null || options.trim().isEmpty()) {
+                options = "[]";
+            }
+
             String level = req.queryParams("level") != null ? req.queryParams("level") : "Beginner";
             String questionType = req.queryParams("questionType") != null ? req.queryParams("questionType")
                     : "multiple_choice";
 
-            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType);
+            // Capture the professor's ID to set as created_by in the database
+            int professorId = Integer.parseInt(req.queryParams("professorId"));
+
+            boolean success = questionDAO.insertQuestion(studyId, text, answer, options, level, questionType,
+                    professorId);
             JsonObject result = new JsonObject();
             result.addProperty("success", success);
             return result.toString();
         });
 
+        // Get statistics for the professor's dashboard
         get("/professor/stats", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(studyDAO.getProfessorStatistics(userId));
         });
-        // get questions by professor
+
+        // Get questions specifically created by the logged-in professor
         get("/professor/questions", (req, res) -> {
             int userId = Integer.parseInt(req.queryParams("userId"));
             return gson.toJson(questionDAO.getQuestionsByProfessor(userId));
         });
 
-        // update question
+        // Update an existing question
         post("/question/update", (req, res) -> {
             int questionId = Integer.parseInt(req.queryParams("questionId"));
             String text = req.queryParams("text");
@@ -265,7 +257,7 @@ public class Main {
             return result.toString();
         });
 
-        // delete question
+        // Delete a specific question
         post("/question/delete", (req, res) -> {
             int questionId = Integer.parseInt(req.queryParams("questionId"));
             boolean success = questionDAO.deleteQuestion(questionId);
@@ -274,8 +266,10 @@ public class Main {
             return result.toString();
         });
 
+        // Get all available categories (domains)
         get("/domains", (req, res) -> gson.toJson(domainDAO.getAllDomains()));
 
+        // Get all available studies
         get("/studies", (req, res) -> gson.toJson(studyDAO.getAllStudies()));
     }
 }

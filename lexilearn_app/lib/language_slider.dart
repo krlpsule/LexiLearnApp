@@ -63,6 +63,7 @@ class LanguageSlider extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           );
         },
     );

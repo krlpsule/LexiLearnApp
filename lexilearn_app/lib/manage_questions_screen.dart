@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'study_models.dart';
 import 'study_service.dart';
+import 'language_manager.dart'; // Çoklu dil yöneticisi import edildi
 
 class ManageQuestionsScreen extends StatefulWidget {
   final int userId;
@@ -39,35 +40,43 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
   }
 
   void _deleteQuestion(int questionId) async {
-    bool confirm = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Question?'),
-        content: const Text(
-          'Are you sure you want to permanently delete this question?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+    // Silme onay kutusundaki yönergeler dile göre dinamikleşti
+    bool confirm =
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(LanguageManager.getText('delete_question_title')),
+            content: Text(LanguageManager.getText('delete_question_confirm')),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(LanguageManager.getText('cancel')),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  LanguageManager.getText('delete'),
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
+        ) ??
+        false;
 
     if (confirm) {
       bool success = await _studyService.deleteQuestion(questionId);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Question deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                LanguageManager.getText('question_deleted_success'),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
         _loadProfessorQuestions(); // Listeyi yenile
       }
     }
@@ -94,24 +103,27 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Edit Question',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                LanguageManager.getText('edit_question_title'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: textController,
-                decoration: const InputDecoration(
-                  labelText: 'Question Text',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: LanguageManager.getText('question_text_label'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: answerController,
-                decoration: const InputDecoration(
-                  labelText: 'Correct Answer',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: LanguageManager.getText('correct_answer_label'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -128,8 +140,7 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
                       questionId: question.questionId,
                       text: textController.text.trim(),
                       answer: answerController.text.trim(),
-                      options:
-                          question.options, // Basitlik adına şıkları koruyoruz
+                      options: question.options,
                       level: question.difficultyLevel,
                       questionType: question.questionType,
                     );
@@ -137,15 +148,17 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
                     if (mounted && success) {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Question updated! 🎉'),
+                        SnackBar(
+                          content: Text(
+                            LanguageManager.getText('question_updated_success'),
+                          ),
                           backgroundColor: Colors.green,
                         ),
                       );
                       _loadProfessorQuestions();
                     }
                   },
-                  child: const Text('Save Changes'),
+                  child: Text(LanguageManager.getText('save_changes_btn')),
                 ),
               ),
               const SizedBox(height: 16),
@@ -158,45 +171,59 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Manage My Questions')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _questions.isEmpty
-          ? const Center(child: Text('You haven\'t added any questions yet.'))
-          : ListView.builder(
-              itemCount: _questions.length,
-              itemBuilder: (context, index) {
-                final q = _questions[index];
-                return Card(
-                  margin: const EdgeInsets.all(8),
-                  child: ListTile(
-                    title: Text(
-                      q.questionText,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      'Study: ${q.difficultyLevel} | Type: ${q.questionType}',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => _editQuestion(q),
+    // Dil değişimini anlık dinlemek için ValueListenableBuilder ile sarmalladık
+    return ValueListenableBuilder<String>(
+      valueListenable: LanguageManager.currentLang,
+      builder: (context, lang, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(LanguageManager.getText('manage_questions_nav')),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          ),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _questions.isEmpty
+              ? Center(
+                  child: Text(LanguageManager.getText('no_questions_found')),
+                )
+              : ListView.builder(
+                  itemCount: _questions.length,
+                  itemBuilder: (context, index) {
+                    final q = _questions[index];
+                    return Card(
+                      margin: const EdgeInsets.all(8),
+                      child: ListTile(
+                        title: Text(
+                          q.questionText,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteQuestion(q.questionId),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            '${LanguageManager.getText('level_label')}: ${q.difficultyLevel} | ${LanguageManager.getText('type_label')}: ${q.questionType}',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _editQuestion(q),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteQuestion(q.questionId),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
 }

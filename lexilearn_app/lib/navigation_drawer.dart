@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'manage_questions_screen.dart'; 
+import 'manage_questions_screen.dart';
 import 'language_manager.dart'; // Added Import
 
 class NavigationDrawer extends StatelessWidget {
@@ -52,7 +52,10 @@ class NavigationDrawer extends StatelessWidget {
                     Text(
                       // Dynamically translate the user role
                       LanguageManager.getText(userRole.toLowerCase()),
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -114,11 +117,12 @@ class NavigationDrawer extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   onTap: () {
-                    Navigator.pop(context); 
+                    Navigator.pop(context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ManageQuestionsScreen(userId: userId),
+                        builder: (context) =>
+                            ManageQuestionsScreen(userId: userId),
                       ),
                     );
                   },
@@ -142,7 +146,9 @@ class NavigationDrawer extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                     (Route<dynamic> route) => false,
                   );
                 },
@@ -150,7 +156,7 @@ class NavigationDrawer extends StatelessWidget {
             ],
           ),
         );
-      }
+      },
     );
   }
 }

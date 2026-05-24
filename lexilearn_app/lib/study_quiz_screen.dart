@@ -135,7 +135,9 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
         barrierDismissible: false,
         builder: (context) => AlertDialog(
           title: Text(LanguageManager.getText('study_complete')),
-          content: Text('${LanguageManager.getText('successfully_finished')} ${widget.studyTitle}.'),
+          content: Text(
+            '${LanguageManager.getText('successfully_finished')} ${widget.studyTitle}.',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -241,7 +243,7 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
     );
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<String>(
       valueListenable: LanguageManager.currentLang,
@@ -255,7 +257,9 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
               child: LinearProgressIndicator(
                 value: _currentProgress / 100,
                 backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Colors.blueAccent,
+                ),
                 minHeight: 6.0,
               ),
             ),
@@ -263,7 +267,9 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _questions.isEmpty
-              ? Center(child: Text(LanguageManager.getText('no_questions_added')))
+              ? Center(
+                  child: Text(LanguageManager.getText('no_questions_added')),
+                )
               : Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SingleChildScrollView(
@@ -293,6 +299,7 @@ class _StudyQuizScreenState extends State<StudyQuizScreen> {
                   ),
                 ),
         );
-      }
+      },
     );
   }
+}
