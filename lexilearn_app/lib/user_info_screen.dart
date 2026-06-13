@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'user_manager.dart';
 import 'package:http/http.dart' as http;
 
 class UserInfoScreen extends StatefulWidget {
   final int userId;
 
   const UserInfoScreen({super.key, required this.userId});
-  
+
   @override
   State<UserInfoScreen> createState() => _UserInfoScreenState();
 }
@@ -47,6 +48,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         );
         return;
       }
+      UserManager.currentUsername.value = newUsername;
     }
 
     // update password

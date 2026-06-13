@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'manage_questions_screen.dart';
-import 'language_manager.dart'; // Added Import
+import 'language_manager.dart'; 
+import 'user_manager.dart'; 
 
 class NavigationDrawer extends StatelessWidget {
   final int userId;
@@ -21,7 +22,6 @@ class NavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ADDED: ValueListenableBuilder watches for language changes
     return ValueListenableBuilder<String>(
       valueListenable: LanguageManager.currentLang,
       builder: (context, lang, child) {
@@ -41,16 +41,21 @@ class NavigationDrawer extends StatelessWidget {
                       child: Icon(Icons.person, size: 40, color: Colors.blue),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      username,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    ValueListenableBuilder<String>(
+                      valueListenable: UserManager.currentUsername,
+                      builder: (context, currentName, child) {
+                        String displayName = currentName.isEmpty ? username : currentName;
+                        return Text(
+                          displayName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
                     ),
                     Text(
-                      // Dynamically translate the user role
                       LanguageManager.getText(userRole.toLowerCase()),
                       style: const TextStyle(
                         color: Colors.white70,
@@ -130,20 +135,13 @@ class NavigationDrawer extends StatelessWidget {
 
               const Divider(),
 
-              // Menu Item 5: Settings
-              ListTile(
-                leading: const Icon(Icons.settings),
-                title: Text(LanguageManager.getText('settings')),
-                onTap: () {
-                  Navigator.pop(context);
-                },
-              ),
-
-              // Menu Item 6: Logout
+              // Menu Item 6: Logout (Settings tamamen silindi, sadece çıkış butonu kaldı)
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: Text(LanguageManager.getText('logout')),
                 onTap: () {
+                  UserManager.currentUsername.value = '';
+
                   Navigator.pop(context);
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(

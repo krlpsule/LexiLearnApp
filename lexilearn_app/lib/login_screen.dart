@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'main.dart'; // Added to access MainScreen
 import 'language_manager.dart'; // Import the manager
-import 'language_slider.dart';  // Import the slider
+import 'language_slider.dart'; // Import the slider
+import 'user_manager.dart'; // EKLENDİ: İsim hafızasına erişmek için
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,6 +67,9 @@ class _LoginScreenState extends State<LoginScreen> {
             String dynamicUsername = responseData['username'];
             String dynamicRole = responseData['role'];
 
+            // EKLENEN SATIR: Başarılı giriş yapan kişinin adını anında hafızaya yaz!
+            UserManager.currentUsername.value = dynamicUsername;
+
             // Success: Handle navigation to the main application page here
             Navigator.pushReplacement(
               context,
@@ -113,15 +117,17 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context, lang, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(isLogin 
-                ? LanguageManager.getText('login') 
-                : LanguageManager.getText('signup')),
+            title: Text(
+              isLogin
+                  ? LanguageManager.getText('login')
+                  : LanguageManager.getText('signup'),
+            ),
             centerTitle: true,
             actions: const [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: Center(child: LanguageSlider()), // Place the slider here
-              )
+              ),
             ],
           ),
           body: Center(
@@ -135,7 +141,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextField(
                       controller: _usernameController,
                       decoration: InputDecoration(
-                        labelText: LanguageManager.getText('username'), // Translated text
+                        labelText: LanguageManager.getText(
+                          'username',
+                        ), // Translated text
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -145,7 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: LanguageManager.getText('email'), // Translated text
+                      labelText: LanguageManager.getText(
+                        'email',
+                      ), // Translated text
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -155,7 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      labelText: LanguageManager.getText('password'), // Translated text
+                      labelText: LanguageManager.getText(
+                        'password',
+                      ), // Translated text
                       border: const OutlineInputBorder(),
                     ),
                   ),
@@ -168,11 +180,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: OutlineInputBorder(),
                       ),
                       items: ['Student', 'Professor']
-                          .map((role) => DropdownMenuItem(
-                                value: role,
-                                // Translate the role dropdown values visually
-                                child: Text(LanguageManager.getText(role.toLowerCase())),
-                              ))
+                          .map(
+                            (role) => DropdownMenuItem(
+                              value: role,
+                              // Translate the role dropdown values visually
+                              child: Text(
+                                LanguageManager.getText(role.toLowerCase()),
+                              ),
+                            ),
+                          )
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -187,9 +203,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: Text(isLogin 
-                        ? LanguageManager.getText('login') 
-                        : LanguageManager.getText('signup')),
+                    child: Text(
+                      isLogin
+                          ? LanguageManager.getText('login')
+                          : LanguageManager.getText('signup'),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -199,18 +217,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         isLogin = !isLogin;
                       });
                     },
-                    child: Text(isLogin
-                        ? LanguageManager.getText('switch_to_signup')
-                        : LanguageManager.getText('switch_to_login')),
+                    child: Text(
+                      isLogin
+                          ? LanguageManager.getText('switch_to_signup')
+                          : LanguageManager.getText('switch_to_login'),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
         );
-      }
+      },
     );
   }
 }
-  
-

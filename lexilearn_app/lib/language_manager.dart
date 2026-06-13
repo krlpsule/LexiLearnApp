@@ -61,7 +61,7 @@ class LanguageManager {
       'multiple_choice': 'Multiple Choice',
       'true_false': 'True / False',
       'fill_in_blank': 'Fill in the Blank',
-      'question_text_label': 'Question',
+      'question_text_label': 'Question', // Bu orijinal haliyle kalsın
       'enter_question_text': 'Enter question text',
       'difficulty_level': 'Difficulty Level',
       'select_level': 'Select Level',
@@ -79,6 +79,18 @@ class LanguageManager {
       'save_question': 'Save Question',
       'option_prefix': 'Option',
       
+      // Yeni Eklenen Soru Uyarı/Hata Mesajları
+      'max_options_error': 'You can add up to 6 options.',
+      'min_options_error': 'There must be at least 2 options.',
+      'select_category_study_error': 'Please select Category and Study.',
+      'enter_question_level_error': 'Please enter Question Text and Level.',
+      'mark_correct_answer_error': 'Please mark the correct answer.',
+      'fill_all_options_error': 'Please fill all option fields.',
+      'select_true_false_error': 'Please select True or False.',
+      'enter_correct_word_error': 'Please enter the correct answer word/phrase.',
+      'question_saved_success': 'Question saved successfully! 🎉',
+      'question_save_failed': 'Failed to save question!',
+      
       // Study Quiz Screen
       'correct_exclamation': 'Correct! 🎉',
       'incorrect_answer': 'Incorrect answer. The right answer was: ',
@@ -92,21 +104,22 @@ class LanguageManager {
       'question_word': 'Question',
       'of_word': 'of',
       'coming_soon': 'Coming Soon',
-       //Manage Questions Screen
-       'manage_questions_nav': 'Manage My Questions',
-'no_questions_found': 'You haven\'t added any questions yet.',
-'level_label': 'Level',
-'type_label': 'Type',
-'delete_question_title': 'Delete Question?',
-'delete_question_confirm': 'Are you sure you want to permanently delete this question?',
-'cancel': 'Cancel',
-'delete': 'Delete',
-'edit_question_title': 'Edit Question',
-'question_text_label': 'Question Text',
-'correct_answer_label': 'Correct Answer',
-'save_changes_btn': 'Save Changes',
-'question_deleted_success': 'Question deleted successfully',
-'question_updated_success': 'Question updated successfully! 🎉',
+      
+      // Manage Questions Screen
+      'manage_questions_nav': 'Manage My Questions',
+      'no_questions_found': 'You haven\'t added any questions yet.',
+      'level_label': 'Level',
+      'type_label': 'Type',
+      'delete_question_title': 'Delete Question?',
+      'delete_question_confirm': 'Are you sure you want to permanently delete this question?',
+      'cancel': 'Cancel',
+      'delete': 'Delete',
+      'edit_question_title': 'Edit Question',
+      'edit_question_text_label': 'Question Text', // DÜZELTİLDİ: key ismi çakışmaması için değiştirildi
+      'correct_answer_label': 'Correct Answer',
+      'save_changes_btn': 'Save Changes',
+      'question_deleted_success': 'Question deleted successfully',
+      'question_updated_success': 'Question updated successfully! 🎉',
     },
     'tr': {
       'login': 'Giriş Yap',
@@ -183,6 +196,18 @@ class LanguageManager {
       'save_question': 'Soruyu Kaydet',
       'option_prefix': 'Seçenek',
       
+      // Yeni Eklenen Soru Uyarı/Hata Mesajları
+      'max_options_error': 'En fazla 6 seçenek ekleyebilirsiniz.',
+      'min_options_error': 'En az 2 seçenek olmalıdır.',
+      'select_category_study_error': 'Lütfen Kategori ve Çalışma seçin.',
+      'enter_question_level_error': 'Lütfen Soru Metnini ve Zorluk Seviyesini girin.',
+      'mark_correct_answer_error': 'Lütfen doğru cevabı işaretleyin.',
+      'fill_all_options_error': 'Lütfen tüm seçenek alanlarını doldurun.',
+      'select_true_false_error': 'Lütfen Doğru veya Yanlış seçin.',
+      'enter_correct_word_error': 'Lütfen doğru cevap kelimesini/ifadesini girin.',
+      'question_saved_success': 'Soru başarıyla kaydedildi! 🎉',
+      'question_save_failed': 'Soru kaydedilemedi!',
+      
       // Study Quiz Screen
       'correct_exclamation': 'Doğru! 🎉',
       'incorrect_answer': 'Cevabınız yanlış. Doğrusu: ',
@@ -196,21 +221,22 @@ class LanguageManager {
       'question_word': 'Soru',
       'of_word': '/',
       'coming_soon': 'Çok Yakında Gelecek',
-        //Manage Questions Screen
-        'manage_questions_nav': 'Sorularımı Yönet',
-'no_questions_found': 'Henüz hiç soru eklemediniz.',
-'level_label': 'Seviye',
-'type_label': 'Tür',
-'delete_question_title': 'Soruyu Sil?',
-'delete_question_confirm': 'Bu soruyu kalıcı olarak silmek istediğinize emin misiniz?',
-'cancel': 'İptal',
-'delete': 'Sil',
-'edit_question_title': 'Soruyu Düzenle',
-'question_text_label': 'Soru Metni',
-'correct_answer_label': 'Doğru Cevap',
-'save_changes_btn': 'Değişiklikleri Kaydet',
-'question_deleted_success': 'Soru başarıyla silindi',
-'question_updated_success': 'Soru başarıyla güncellendi! 🎉',
+      
+      // Manage Questions Screen
+      'manage_questions_nav': 'Sorularımı Yönet',
+      'no_questions_found': 'Henüz hiç soru eklemediniz.',
+      'level_label': 'Seviye',
+      'type_label': 'Tür',
+      'delete_question_title': 'Soruyu Sil?',
+      'delete_question_confirm': 'Bu soruyu kalıcı olarak silmek istediğinize emin misiniz?',
+      'cancel': 'İptal',
+      'delete': 'Sil',
+      'edit_question_title': 'Soruyu Düzenle',
+      'edit_question_text_label': 'Soru Metni', 
+      'correct_answer_label': 'Doğru Cevap',
+      'save_changes_btn': 'Değişiklikleri Kaydet',
+      'question_deleted_success': 'Soru başarıyla silindi',
+      'question_updated_success': 'Soru başarıyla güncellendi! 🎉',
     }
   };
 

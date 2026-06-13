@@ -112,6 +112,57 @@ public class Main {
         });
 
         // ==========================================
+        // USER PROFILE UPDATES (YENİ EKLENEN KISIM)
+        // ==========================================
+
+        put("/user/username", (req, res) -> {
+            JsonObject responseJson = new JsonObject();
+            try {
+                int userId = Integer.parseInt(req.queryParams("userId"));
+                String newUsername = req.queryParams("newUsername");
+
+                boolean success = userDAO.updateUsername(userId, newUsername);
+
+                if (success) {
+                    res.status(200);
+                    responseJson.addProperty("success", true);
+                } else {
+                    res.status(400);
+                    responseJson.addProperty("success", false);
+                }
+            } catch (Exception e) {
+                res.status(500);
+                responseJson.addProperty("success", false);
+                e.printStackTrace();
+            }
+            return responseJson.toString();
+        });
+
+        put("/user/password", (req, res) -> {
+            JsonObject responseJson = new JsonObject();
+            try {
+                int userId = Integer.parseInt(req.queryParams("userId"));
+                String currentHash = req.queryParams("currentHash");
+                String newHash = req.queryParams("newHash");
+
+                boolean success = userDAO.updatePassword(userId, currentHash, newHash);
+
+                if (success) {
+                    res.status(200);
+                    responseJson.addProperty("success", true);
+                } else {
+                    res.status(400);
+                    responseJson.addProperty("success", false);
+                }
+            } catch (Exception e) {
+                res.status(500);
+                responseJson.addProperty("success", false);
+                e.printStackTrace();
+            }
+            return responseJson.toString();
+        });
+
+        // ==========================================
         // STUDENT STUDY ENDPOINTS
         // ==========================================
 

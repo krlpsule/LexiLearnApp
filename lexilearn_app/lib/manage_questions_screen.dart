@@ -114,7 +114,9 @@ class _ManageQuestionsScreenState extends State<ManageQuestionsScreen> {
               TextField(
                 controller: textController,
                 decoration: InputDecoration(
-                  labelText: LanguageManager.getText('question_text_label'),
+                  labelText: LanguageManager.getText(
+                    'edit_question_text_label',
+                  ),
                   border: const OutlineInputBorder(),
                 ),
               ),

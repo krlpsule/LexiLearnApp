@@ -72,8 +72,6 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
     );
   }
 
-  // YANLIŞLIKLA SİLİNEN VE GERİ GETİRİLEN FONKSİYONLAR AŞAĞIDA:
-
   Widget _buildOngoingList() {
     return RefreshIndicator(
       onRefresh: () async {
@@ -352,7 +350,8 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
   }
 
   void _openStudy(int studyId, String title, double currentProgress) async {
-    final result = await Navigator.push(
+    // Sınav ekranına gidiş
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => StudyQuizScreen(
@@ -364,7 +363,8 @@ class _MyStudiesScreenState extends State<MyStudiesScreen>
       ),
     );
 
-    if (result == true) {
+    
+    if (mounted) {
       setState(() {
         _loadData();
       });
